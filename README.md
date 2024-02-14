@@ -7,4 +7,6 @@ See [the official book repo](https://github.com/sixeyed/diamol.git) for resource
 ## TODO
 
 ## See also
+* [Docker documentation](https://docs.docker.com/)
+* author's [blog](https://blog.sixeyed.com/) and [YouTube](https://youtube.com/eltonstoneman)
 * [my *KIAMOL* repo](https://github.com/paulkaefer/kiamol_code)

@@ -1,7 +1,13 @@
-## Setup/teardown
+# Setup/teardown
 See `book_code.md` and `cleanup.md`, respectively.
 
-## Chapter 2
+# Preface
+* author started working with Docker in 2014
 
-## Once complete:
+# Part 1. Understanding Docker containers and images
+
+## Chapter 1: Before you begin
+* links: http://mng.bz/04lW
+
+# Once complete:
 - [ ] consider a certification
