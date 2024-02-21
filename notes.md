@@ -22,5 +22,13 @@ See `book_code.md` and `cleanup.md`, respectively.
 ### Discussion notes
 * "Benefits of a VM without the downside" says Yong.
 
+## Chapter 2: Understanding Docker and running Hello World
+* VMs: own OS; can use GB of RAM and lots of CPU
+  * isolation at the cost of density
+  * licensing costs; burden of OS updates
+* Containers: share OS of computer running; makes them extremely lightweight
+  * can have typically 5-10x as many as VMs on the same hardware
+  * density, but apps are in own containers, so you also get isolation --> Docker is efficient!
+
 # Once complete:
 - [ ] consider a certification
