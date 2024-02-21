@@ -35,5 +35,8 @@ See `book_code.md` and `cleanup.md`, respectively.
 * "containerd is an open source component overseen by the Cloud Native Computing Foundation, and the specification for running containers is open and public; it’s called the Open Container Initiative (OCI)."
 * "Docker is by far the most popular and easy to use container platform, but it’s not the only one. You can confidently invest in containers without being concerned that you’re getting locked in to one vendor’s platform."
 
+### Discussion notes
+* We asked ChatGPT, "If a Docker instance doesn't have an OS, is it even possible to run a different OS in it?" and it answered, "Docker containers don't contain a full operating system; instead, they package only the necessary components and dependencies required to run a specific application. Docker containers share the host operating system's kernel and resources, which allows them to be lightweight and portable." & mentioned running a VM if we need a totally different OS. It also said, "Docker is designed to be used with containerized applications, and it's not meant for running full-fledged operating systems."
+
 # Once complete:
 - [ ] consider a certification
