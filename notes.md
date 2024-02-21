@@ -29,6 +29,11 @@ See `book_code.md` and `cleanup.md`, respectively.
 * Containers: share OS of computer running; makes them extremely lightweight
   * can have typically 5-10x as many as VMs on the same hardware
   * density, but apps are in own containers, so you also get isolation --> Docker is efficient!
+* "You can try a new piece of software--say, Elasticsearch, or the latest version of SQL Server, or the Ghost blogging engine--with the same type of `docker container run` commands you’ve been using here."
+* "...Universal Control Plane (UCP), a commercial product from the company behind Docker ( https://docs.docker.com/ee/ucp/ ). Portainer is another option, which is an open source project. Both UCP and Portainer run as containers themselves, so they’re easy to deploy and manage."
+  * UCP is a graphical user interface for containers
+* "containerd is an open source component overseen by the Cloud Native Computing Foundation, and the specification for running containers is open and public; it’s called the Open Container Initiative (OCI)."
+* "Docker is by far the most popular and easy to use container platform, but it’s not the only one. You can confidently invest in containers without being concerned that you’re getting locked in to one vendor’s platform."
 
 # Once complete:
 - [ ] consider a certification

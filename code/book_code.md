@@ -409,6 +409,52 @@ It works! At `http://localhost:8088`, I see:
 > Hello from Chapter 2!
 > This is [Learn Docker in a Month of Lunches](https://www.manning.com/books/learn-docker-in-a-month-of-lunches).
 
+Running `docker container stats`:
+```
+CONTAINER ID   NAME               CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O    PIDS
+d5e4da70f31d   romantic_wescoff   0.00%     4.668MiB / 8.726GiB   0.05%     3.85kB / 1.97kB   0B / 4.1kB   82
+```
+
+Cleanup:
+```bash
+Wed Feb 21 11:30:37
+~/GitHub/diamol/ch02
+paulkaefer ~/GitHub/diamol/ch02 λ docker container rm d5e4da70f31d
+Error response from daemon: cannot remove container "/romantic_wescoff": container is running: stop the container before removing or force remove
+
+Wed Feb 21 11:30:40
+~/GitHub/diamol/ch02
+paulkaefer ~/GitHub/diamol/ch02 λ docker container rm --force d5e4da70f31d
+d5e4da70f31d
+
+λ docker container rm --force $(docker container ls --all --quiet)
+bb4ca7368a7d
+6f2c1e8ac1f8
+aa93dcb21074
+be0202fbc034
+e66928f48980
+```
+
+## Section 2.5: Understanding how Docker runs containers
+
+## Chapter 2 Lab
+```
+docker container run --detach --publish 8088:80 diamol/ch02-hello-diamol-web
+```
+
+My work:
+```bash
+λ docker container run --detach --publish 8088:80 diamol/ch02-hello-diamol-web
+b02396891985eed71002f3cc504aeba05b3380d84ccf8b5215e1f47e32146de9
+```
+Ah, this didn't work because I changed the file locally, but this pulls from docker hub.
+
+Following the README:
+```bash
+λ docker container exec b02  ls /usr/local/apache2/htdocs
+index.html
+λ docker container cp index.html b02:/usr/local/apache2/htdocs/index.html
+Successfully copied 2.05kB to b02:/usr/local/apache2/htdocs/index.html
 
 
 
