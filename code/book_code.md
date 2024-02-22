@@ -704,9 +704,20 @@ kubeless/http-trigger-controller                                 v1.0.1         
 kubeless/cronjob-trigger-controller                              v1.0.1                                                                       aec1dd30bb57   4 years ago     77.1MB
 ```
 
+Cool that my `web-ping`/`diamol/ch03-web-ping` are using 75.5MB, roughly what the author's screenshot shows.
 
+```bash
+λ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          128       14        16.59GB   14.96GB (90%)
+Containers      41        20        585.7kB   213B (0%)
+Local Volumes   2         2         11.75MB   0B (0%)
+Build Cache     52        0         59.74MB   59.74MB
+```
 
+Nice!
 
+## Section 3.5: Optimizing Dockerfiles to use the image layer cache
 
 
 
