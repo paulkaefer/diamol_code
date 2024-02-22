@@ -719,6 +719,18 @@ Nice!
 
 ## Section 3.5: Optimizing Dockerfiles to use the image layer cache
 
+```bash
+cd ../web-ping-optimized
+docker image build -t web-ping:v3 .
+```
+One observation is that I (still) don't see the seven steps as mentioned. Might be the newest Docker working differently than the version the author used.
+
+
+## Chatper 3 Lab
+1. pull `diamol/ch03-lab` from Docker Hub
+2. ssh into it to look at `/diamol/ch03.txt`
+3. edit a version of the file locally
+4. copy it in? or is there a way to just create an image...
 
 
 
