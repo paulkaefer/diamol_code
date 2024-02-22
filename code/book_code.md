@@ -455,6 +455,124 @@ Following the README:
 index.html
 λ docker container cp index.html b02:/usr/local/apache2/htdocs/index.html
 Successfully copied 2.05kB to b02:/usr/local/apache2/htdocs/index.html
+```
+
+# Chapter 3: Building your own Docker images
+
+## Section 3.1: Using a container image from Docker Hub
+[Image](https://hub.docker.com/r/diamol/ch03-web-ping) that pings the author's blog:
+```bash
+docker image pull diamol/ch03-web-ping
+```
+Output:
+```
+Using default tag: latest
+latest: Pulling from diamol/ch03-web-ping
+0362ad1dd800: Pull complete 
+b09a182c47e8: Pull complete 
+39d61d2ed871: Pull complete 
+b4e2115e274a: Pull complete 
+f5cca017994f: Pull complete 
+f504555623f6: Pull complete 
+Digest: sha256:2f2dce710a7f287afc2d7bbd0d68d024bab5ee37a1f658cef46c64b1a69affd2
+Status: Downloaded newer image for diamol/ch03-web-ping:latest
+docker.io/diamol/ch03-web-ping:latest
+```
+
+```bash
+docker container run -d --name web-ping diamol/ch03-web-ping
+```
+Output:
+```
+e81a0297a124fa7a8fd01c199b54d99b5a7738a98b59fe4219959170913cf11c
+```
+
+Running `docker container logs web-ping` shows that it is running the pings.
+
+```bash
+λ docker rm -f web-ping
+web-ping
+λ docker container run --env TARGET=google.com diamol/ch03-web-ping
+** web-ping ** Pinging: google.com; method: HEAD; 3000ms intervals
+Making request number: 1; at 1708613920449
+...
+```
+
+## Section 3.2: Writing your first Dockerfile
+Explained files in `~/GitHub/diamol/ch03/exercises/web-ping` (except for `Jenkinsfile`).
+
+## Section 3.3: Building your own container image
+
+```bash
+docker image build --tag web-ping .
+```
+Output:
+```
+[+] Building 1.9s (9/9) FINISHED                           docker:desktop-linux
+ => [internal] load build definition from Dockerfile                       0.0s
+ => => transferring dockerfile: 190B                                       0.0s
+ => [internal] load metadata for docker.io/diamol/node:latest              1.7s
+ => [auth] diamol/node:pull token for registry-1.docker.io                 0.0s
+ => [internal] load .dockerignore                                          0.0s
+ => => transferring context: 2B                                            0.0s
+ => [1/3] FROM docker.io/diamol/node:latest@sha256:dfee522acebdfdd9964aa9  0.0s
+ => => resolve docker.io/diamol/node:latest@sha256:dfee522acebdfdd9964aa9  0.0s
+ => => sha256:dfee522acebdfdd9964aa9c88ebebd03a20b6dd5739 1.41kB / 1.41kB  0.0s
+ => => sha256:6467efe6481aace0c317f144079c1a321b91375a828 1.16kB / 1.16kB  0.0s
+ => => sha256:8e0eeb0a11b3a91cc1d91b5ef637edd153a64a3792e 5.66kB / 5.66kB  0.0s
+ => [internal] load build context                                          0.0s
+ => => transferring context: 881B                                          0.0s
+ => [2/3] WORKDIR /web-ping                                                0.0s
+ => [3/3] COPY app.js .                                                    0.0s
+ => exporting to image                                                     0.0s
+ => => exporting layers                                                    0.0s
+ => => writing image sha256:fa972ea9b32ed16dcb9966ae48a05b8aa2e8ea62a0a65  0.0s
+ => => naming to docker.io/library/web-ping                                0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/zg3g2t6nw6vjdazfm5oi29hwl
+```
+No “successfully built” and “successfully tagged” messages (mentioned in the text), but (1) it says `FINISHED` and (2) no errors.
+
+```bash
+λ docker image ls 'w*'
+REPOSITORY   TAG       IMAGE ID       CREATED              SIZE
+web-ping     latest    fa972ea9b32e   About a minute ago   75.5MB
+```
+
+Running it...
+```bash
+docker container run -e TARGET=docker.com -e INTERVAL=5000 web-ping
+# works; the below will ping my website:
+docker container run -e INTERVAL=5000 web-ping
+```
+
+## Section 3.4: Understanding Docker images and image layers
+```bash
+λ docker image history web-ping
+IMAGE          CREATED         CREATED BY                                      SIZE      COMMENT
+fa972ea9b32e   4 minutes ago   CMD ["node" "/web-ping/app.js"]                 0B        buildkit.dockerfile.v0
+<missing>      4 minutes ago   COPY app.js . # buildkit                        846B      buildkit.dockerfile.v0
+<missing>      4 minutes ago   WORKDIR /web-ping                               0B        buildkit.dockerfile.v0
+<missing>      4 minutes ago   ENV INTERVAL=3000                               0B        buildkit.dockerfile.v0
+<missing>      4 minutes ago   ENV METHOD=HEAD                                 0B        buildkit.dockerfile.v0
+<missing>      4 minutes ago   ENV TARGET=paulkaefer.com                       0B        buildkit.dockerfile.v0
+<missing>      4 years ago     /bin/sh -c #(nop)  CMD ["node"]                 0B        
+<missing>      4 years ago     /bin/sh -c #(nop)  ENTRYPOINT ["docker-entry…   0B        
+<missing>      4 years ago     /bin/sh -c #(nop) COPY file:238737301d473041…   116B      
+<missing>      4 years ago     /bin/sh -c apk add --no-cache --virtual .bui…   5.11MB    
+<missing>      4 years ago     /bin/sh -c #(nop)  ENV YARN_VERSION=1.16.0      0B        
+<missing>      4 years ago     /bin/sh -c addgroup -g 1000 node     && addu…   65.1MB    
+<missing>      4 years ago     /bin/sh -c #(nop)  ENV NODE_VERSION=10.16.0     0B        
+<missing>      4 years ago     /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B        
+<missing>      4 years ago     /bin/sh -c #(nop) ADD file:66f49017dd7ba2956…   5.29MB
+```
+The `238737301d473041…` is mentioned @ `ch03-web-ping` on Docker Hub.
+
+
+
+
+
+
 
 
 

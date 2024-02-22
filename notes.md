@@ -38,5 +38,8 @@ See `book_code.md` and `cleanup.md`, respectively.
 ### Discussion notes
 * We asked ChatGPT, "If a Docker instance doesn't have an OS, is it even possible to run a different OS in it?" and it answered, "Docker containers don't contain a full operating system; instead, they package only the necessary components and dependencies required to run a specific application. Docker containers share the host operating system's kernel and resources, which allows them to be lightweight and portable." & mentioned running a VM if we need a totally different OS. It also said, "Docker is designed to be used with containerized applications, and it's not meant for running full-fledged operating systems."
 
+## Chapter 3: Building your own Docker images
+* Docker images may be packaged with a default set of configuration values for the application, but you should be able to provide different configuration settings when you run a container.
+
 # Once complete:
 - [ ] consider a certification
