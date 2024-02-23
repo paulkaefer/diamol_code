@@ -774,6 +774,25 @@ Both returned:
 Error response from daemon: container d9e51b3ae4224ae21207ba842743beadf56d7d6ef30692539163e5e9fcc54b7c is not running
 ```
 
+Followed the README:
+```bash
+λ docker container run -it --name ch03lab diamol/ch03-lab
+/diamol # echo "Paul Kaefer" >> ch03.txt 
+/diamol # cat ch03.txt 
+Lab solution, by: Paul Kaefer
+/diamol # exit
+λ docker container commit ch03lab ch03-lab-soln
+sha256:287288b5add451692ff4359c5bbbfe48d8058ee8ecf89c49899752d3defd831b
+
+Fri Feb 23 11:32:17
+~/GitHub/diamol/ch03/lab
+paulkaefer ~/GitHub/diamol/ch03/lab λ docker container run ch03-lab-soln cat ch03.txt
+Lab solution, by: Paul Kaefer
+```
+
+Then can interactively run using `docker container run -it ch03-lab-soln`.
+
+
 
 
 
