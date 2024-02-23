@@ -727,10 +727,69 @@ One observation is that I (still) don't see the seven steps as mentioned. Might 
 
 
 ## Chatper 3 Lab
-1. pull `diamol/ch03-lab` from Docker Hub
+1. pull `diamol/ch03-lab` from Docker Hub; actually just run the command in step 2, as it should pull as well.
+```bash
+docker container run diamol/ch03-lab
+```
 2. ssh into it to look at `/diamol/ch03.txt`
+```bash
+docker container run --interactive --tty diamol/ch03-lab
+```
+Output:
+```
+Unable to find image 'diamol/ch03-lab:latest' locally
+latest: Pulling from diamol/ch03-lab
+941f399634ec: Already exists 
+716aca3e500c: Already exists 
+d347025eebd3: Pull complete 
+c55b6ee61343: Pull complete 
+Digest: sha256:161fc42d4a6ea122e2534e884a7ef7c737433e4aa098ba0523816e63f39e05c2
+Status: Downloaded newer image for diamol/ch03-lab:latest
+/diamol #
+```
 3. edit a version of the file locally
+```
+/diamol # cat ch03.txt 
+Lab solution, by: 
+```
 4. copy it in? or is there a way to just create an image...
+```bash
+docker container ls --all
+docker container cp ch03.txt d9:/diamol/ch03.txt
+```
+Output:
+```
+Successfully copied 2.05kB to d9:/diamol/ch03.txt
+```
+`d9e51b3ae422` = `adoring_lalande`
+
+```bash
+docker exec -it adoring_lalande /bin/bash
+
+docker exec adoring_lalande cat /diamol/ch03.txt
+```
+
+Both returned:
+```
+Error response from daemon: container d9e51b3ae4224ae21207ba842743beadf56d7d6ef30692539163e5e9fcc54b7c is not running
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
