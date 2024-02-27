@@ -885,7 +885,7 @@ paulkaefer ~/GitHub/diamol/ch04 λ docker image rm -f  8a8853903859
 Error response from daemon: conflict: unable to delete 8a8853903859 (cannot be forced) - image has dependent child images
 ```
 Interesting! I would have thought the lab was depended on the base, not the other way around.
-We dug into this; the lab <u>solution</u> is what is dependent on `diamol/ch03-lab`.
+We dug into this; the lab <ins>solution</ins> is what is dependent on `diamol/ch03-lab`.
 
 ## Section 4.1: Who needs a build server when you have a Dockerfile?
 
