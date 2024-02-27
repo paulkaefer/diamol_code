@@ -888,9 +888,32 @@ Interesting! I would have thought the lab was depended on the base, not the othe
 
 ## Section 4.1: Who needs a build server when you have a Dockerfile?
 
+```bash
+λ pwd
+/Users/paulkaefer/GitHub/diamol/ch04/exercises/multi-stage
+λ docker image build -t multi-stage .
+[+] Building 0.5s (9/9) FINISHED                                                                                              docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                                                                          0.0s
+ => => transferring dockerfile: 302B                                                                                                          0.0s
+ => [internal] load metadata for docker.io/diamol/base:latest                                                                                 0.0s
+ => [internal] load .dockerignore                                                                                                             0.0s
+ => => transferring context: 2B                                                                                                               0.0s
+ => [build-stage 1/2] FROM docker.io/diamol/base:latest                                                                                       0.0s
+ => [build-stage 2/2] RUN echo 'Building...' > /build.txt                                                                                     0.3s
+ => [test-stage 2/3] COPY --from=build-stage /build.txt /build.txt                                                                            0.0s
+ => [test-stage 3/3] RUN echo 'Testing...' >> /build.txt                                                                                      0.1s
+ => [stage-2 2/2] COPY --from=test-stage /build.txt /build.txt                                                                                0.0s
+ => exporting to image                                                                                                                        0.0s
+ => => exporting layers                                                                                                                       0.0s
+ => => writing image sha256:41746b5df1a680bfa4ed7e01cb1d38ad5713bc2f8e3ba97fe94981f8aa38ee9b                                                  0.0s
+ => => naming to docker.io/library/multi-stage                                                                                                0.0s
 
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/0vg25noz7tjc4cr9ogtybr076
+```
+Neat; opens in Docker Desktop:
+![](./attachments/ch04/Screenshot_2024-02-27_1043AM.png)
 
-
+## Section 4.2: App walkthrough: Java source code
 
 
 
