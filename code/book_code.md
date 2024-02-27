@@ -971,6 +971,12 @@ Ooh, `http://localhost:800/image` also shows:
 
 ## Section 4.4: App walkthrough: Go source code
 
-
+```bash
+λ cd ch04/exercises/image-gallery
+λ docker image build -t image-gallery .
+λ docker image ls -f reference=diamol/golang -f reference=image-gallery
+REPOSITORY      TAG       IMAGE ID       CREATED          SIZE
+image-gallery   latest    2dc75a11cdfa   13 seconds ago   26.2MB
+```
 
 

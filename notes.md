@@ -60,6 +60,7 @@ One helpful image:
 > * **go-offline**: This is the specific goal within the Dependency Plugin. When you execute this goal, Maven will download all the dependencies required for your project and store them in your local Maven repository. Going "offline" means that Maven will attempt to download all the necessary dependencies without connecting to the internet during subsequent builds, making your build process more self-contained.
 > 
 > In summary, when you run mvn -B dependency:go-offline, you are telling Maven to resolve and download all the dependencies for your project and store them locally, allowing you to build your project even when you don't have an internet connection. This is particularly useful in scenarios where you want to ensure that your build process can run independently of external network availability.
+* "Docker itself is written in Go"
 
 # Once complete:
 - [ ] consider a certification
