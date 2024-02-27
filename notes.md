@@ -61,6 +61,7 @@ One helpful image:
 > 
 > In summary, when you run mvn -B dependency:go-offline, you are telling Maven to resolve and download all the dependencies for your project and store them locally, allowing you to build your project even when you don't have an internet connection. This is particularly useful in scenarios where you want to ensure that your build process can run independently of external network availability.
 * "Docker itself is written in Go"
+* "Multi-stage Dockerfiles make your project entirely portable. You might use Jenkins to build your apps right now, but you could try AppVeyor’s managed CI service or Azure DevOps without having to write any new pipeline code--they all support Docker, so your pipeline is just `docker image build`."
 
 # Once complete:
 - [ ] consider a certification

@@ -975,8 +975,69 @@ Ooh, `http://localhost:800/image` also shows:
 λ cd ch04/exercises/image-gallery
 λ docker image build -t image-gallery .
 λ docker image ls -f reference=diamol/golang -f reference=image-gallery
+# work:
 REPOSITORY      TAG       IMAGE ID       CREATED          SIZE
 image-gallery   latest    2dc75a11cdfa   13 seconds ago   26.2MB
+
+# personal:
+REPOSITORY      TAG       IMAGE ID       CREATED         SIZE
+image-gallery   latest    bf5865de7158   6 seconds ago   27.1MB
 ```
+Hmm, no sign of `diamol/golang` on either. Ran `docker pull diamol/golang` on both devices. Personal computer now shows:
+```
+REPOSITORY      TAG       IMAGE ID       CREATED         SIZE
+image-gallery   latest    bf5865de7158   2 minutes ago   27.1MB
+diamol/golang   latest    119cb20c3f56   3 years ago     803MB
+```
+Interesting! Just 708MB on my work computer.
+
+```bash
+λ docker container ls
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                 NAMES
+f61c113302d1   image-of-the-day   "java -jar /app/iotd…"   18 minutes ago   Up 17 minutes   0.0.0.0:800->80/tcp   iotd
+b296e92a9fa1   access-log         "docker-entrypoint.s…"   20 minutes ago   Up 20 minutes   0.0.0.0:801->80/tcp   accesslog
+λ docker container run -d -p 802:80 --network nat image-gallery
+3cec79c380b193e23b1ba82f9975e3b5467d4b8c573dce3e7858b0d737c9bbbb
+```
+It works, is beautiful (screenshot below), and I now see `{"logs":2}` at `http://localhost:801/stats`.
+![](./attachments/ch04/Section_4.4_Go_app_running.png)
+
+## Section 4.5: Understanding multi-stage Dockerfiles
+
+## Lab
+Pressed for time, so I just compared the Dockerfiles; they make sense.
+```bash
+λ docker container run
+ -d -p 804:80 ch04-lab
+8f5e1d051c08db11c9e3d4a59176675a7884a3e7d27f5273c2f6d93474ce07c8
+
+λ docker image ls
+REPOSITORY                                                TAG                                                                          IMAGE ID       CREATED              SIZE
+ch04-lab                                                  latest                                                                       b38da5696cc6   About a minute ago   832MB
+...
+
+λ docker image build -t ch04-lab:optimized -f Dockerfile.optimized .
+
+λ docker container run
+ -d -p 805:80 ch04-lab:optimized
+b19244747d034ce093f22e1de07f7b8f75122b8891bf763e5ea4a5ed27ec65b6
+
+λ docker image ls
+REPOSITORY                                                TAG                                                                          IMAGE ID       CREATED          SIZE
+ch04-lab                                                  optimized                                                                    5d215edf99c2   40 seconds ago   17MB
+ch04-lab                                                  latest                                                                       b38da5696cc6   4 minutes ago    832MB
+...
+```
+Note: may have also created one with hash `7502731ea2223f1da7107e5ae764a8525acc7d101a1a851d0ac66a9bf65d39b9` on my Mac.
+
+
+
+
+
+
+
+
+
+
 
 
