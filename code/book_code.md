@@ -919,10 +919,33 @@ Neat; opens in Docker Desktop:
 cd ch04/exercises/image-of-the-day
 docker image build -t image-of-the-day .
 ```
-There are errors.
+There are errors. Not on my personal computer, though!
+```
+[+] Building 105.1s (17/17) FINISHED                       docker:desktop-linux
+ => [internal] load build definition from Dockerfile                       0.1s
+...
+ => => naming to docker.io/library/image-of-the-day                        0.0s
+```
+
+```bash
+docker container run --name accesslog -d -p 801:80 --network nat access-log
+```
+Output:
+```
+b296e92a9fa1abe9042d31ca67f458e71d52248b4de2f7ef05e980935ed2bdcd
+```
+And `http://localhost:801/stats` shows:
+```
+{"logs":0}
+```
+
+Ooh, `http://localhost:800/image` also shows:
+```
+{"url":"https://apod.nasa.gov/apod/image/2402/Simeis147_Vetter_960.jpg","caption":"Supernova Remnant Simeis 147","copyright":"\nStéphane Vetter\n(Nuits sacrées)\n"}
+```
 
 
-
+## Section 4.4: App walkthrough: Go source code
 
 
 
