@@ -885,6 +885,7 @@ paulkaefer ~/GitHub/diamol/ch04 λ docker image rm -f  8a8853903859
 Error response from daemon: conflict: unable to delete 8a8853903859 (cannot be forced) - image has dependent child images
 ```
 Interesting! I would have thought the lab was depended on the base, not the other way around.
+We dug into this; the lab <u>solution</u> is what is dependent on `diamol/ch03-lab`.
 
 ## Section 4.1: Who needs a build server when you have a Dockerfile?
 
@@ -1005,7 +1006,7 @@ It works, is beautiful (screenshot below), and I now see `{"logs":2}` at `http:/
 ## Section 4.5: Understanding multi-stage Dockerfiles
 
 ## Lab
-Pressed for time, so I just compared the Dockerfiles; they make sense.
+Pressed for time, so I just compared the Dockerfiles; they make sense. The one question is why the `EXPOSE`/`CMD`/`ENV` command order is swapped in the author's solution.
 ```bash
 λ docker container run
  -d -p 804:80 ch04-lab
