@@ -938,6 +938,11 @@ Not on my personal computer, though!
 ```
 
 ```bash
+docker container run --name iotd -d -p 800:80 --network nat image-of-the-day
+```
+
+## Section 4.3: App walkthrough: Node.js source code
+```bash
 cd ch04/exercises/access-log
 docker image build -t access-log .
 ```
