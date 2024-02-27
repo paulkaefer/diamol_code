@@ -41,5 +41,10 @@ See `book_code.md` and `cleanup.md`, respectively.
 ## Chapter 3: Building your own Docker images
 * Docker images may be packaged with a default set of configuration values for the application, but you should be able to provide different configuration settings when you run a container.
 
+## Chapter 4: Packaging applications from source code into Docker Images
+* Regarding Figure 4.1 Everyone needs the same set of tools to build a software project.
+  * a relevant problem experienced on a project at work just today! which is a funny contrast to other projects actively using Docker
+![](./attachments/Figure_4-1.jpg)
+
 # Once complete:
 - [ ] consider a certification

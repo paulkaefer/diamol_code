@@ -793,10 +793,100 @@ Lab solution, by: Paul Kaefer
 Then can interactively run using `docker container run -it ch03-lab-soln`.
 
 
+# Chapter 4: Packaging applications from source code into Docker Images
+Ran some cleanup first:
+```bash
+Tue Feb 27 10:14:46
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker container ls --all
+CONTAINER ID   IMAGE                          COMMAND                  CREATED      STATUS                      PORTS                  NAMES
+95c5bad54f01   ch03-lab-soln                  "/bin/sh"                3 days ago   Exited (0) 3 days ago                              eager_brown
+7a71db381f47   ch03-lab-soln                  "cat ch03.txt"           3 days ago   Exited (0) 3 days ago                              pensive_jennings
+dac17359b750   ch03-lab-soln                  "/bin/sh"                3 days ago   Exited (0) 3 days ago                              pedantic_curie
+87dec210787e   ch03-lab-soln                  "cmd /s /c type ch03…"   3 days ago   Created                                            jolly_dubinsky
+9dc4830ee653   ch03-lab-soln                  "cat ch03.txt"           3 days ago   Exited (0) 3 days ago                              goofy_roentgen
+07e4d427fd38   diamol/ch03-lab                "/bin/sh"                3 days ago   Exited (0) 3 days ago                              ch03lab
+d9e51b3ae422   diamol/ch03-lab                "/bin/sh"                4 days ago   Exited (0) 4 days ago                              adoring_lalande
+8fdb767b8adb   diamol/ch03-lab                "/bin/sh"                4 days ago   Exited (0) 4 days ago                              nostalgic_ride
+5f9b66b52776   diamol/ch03-lab                "/bin/sh"                4 days ago   Exited (0) 4 days ago                              recursing_davinci
+ee36bca0aca7   web-ping                       "docker-entrypoint.s…"   5 days ago   Exited (0) 5 days ago                              competent_hoover
+6ea71af0669e   web-ping                       "docker-entrypoint.s…"   5 days ago   Exited (0) 5 days ago                              gallant_lewin
+f95c888fefce   diamol/ch03-web-ping           "docker-entrypoint.s…"   5 days ago   Exited (0) 5 days ago                              unruffled_chandrasekhar
+8d0cc2462e1a   diamol/base                    "/bin/sh"                5 days ago   Exited (0) 5 days ago                              xenodochial_chandrasekhar
+b02396891985   diamol/ch02-hello-diamol-web   "httpd-foreground"       5 days ago   Exited (255) 21 hours ago   0.0.0.0:8088->80/tcp   laughing_wu
 
+Tue Feb 27 10:14:49
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker container rm -f 95c5bad54f01 7a71db381f47 dac17359b750  87dec210787e 9dc4830ee653 07e4d427fd38 d9e51b3ae422 8fdb767b8adb 5f9b66b52776 ee36bca0aca7 6ea71af0669e f95c888fefce b02396891985
+95c5bad54f01
+7a71db381f47
+dac17359b750
+87dec210787e
+9dc4830ee653
+07e4d427fd38
+d9e51b3ae422
+8fdb767b8adb
+5f9b66b52776
+ee36bca0aca7
+6ea71af0669e
+f95c888fefce
+b02396891985
 
+Tue Feb 27 10:15:32
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker container ls --all
+CONTAINER ID   IMAGE         COMMAND     CREATED      STATUS                  PORTS     NAMES
+8d0cc2462e1a   diamol/base   "/bin/sh"   5 days ago   Exited (0) 5 days ago             xenodochial_chandrasekhar
 
+Tue Feb 27 10:16:20
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker image ls -f reference='diamol/*'
+REPOSITORY                     TAG       IMAGE ID       CREATED       SIZE
+diamol/ch02-hello-diamol-web   latest    40ba417b2294   2 years ago   54.6MB
+diamol/ch03-lab                latest    8a8853903859   2 years ago   6.89MB
+diamol/base                    latest    e65ed3e91e57   2 years ago   6.89MB
+diamol/ch03-web-ping           latest    bfce5d697312   3 years ago   75.5MB
+diamol/ch02-hello-diamol       latest    c65623b61864   3 years ago   5.3MB
 
+Tue Feb 27 10:16:23
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker image rm -f  40ba417b2294 8a8853903859 bfce5d697312 c65623b61864
+Untagged: diamol/ch02-hello-diamol-web:latest
+Untagged: diamol/ch02-hello-diamol-web@sha256:fe5a4c954fe2df5cadeea304ab632533f8ece9e31bd219ea22fdbf8b597571eb
+Deleted: sha256:40ba417b2294a9756f77ac6a63bcdef1edaa0afb8849f7d760b41ceb8b929e73
+Deleted: sha256:313d76222fce936fe658c078838b39a9d761cf3c43d023dd1e1627f1f953bdc5
+Deleted: sha256:da38f4a8ac9d5262ad1678a3965e5bf510e60bb4180bb870d4ebc0414a8f7918
+Deleted: sha256:ca09e7e93505470ddbc92bb1bd39e543c680818e1e19834c25c07bc3b0907b64
+Deleted: sha256:84ef683740a51e1cf432cd9962fb90ff6e23d54077efe1574557d17516997585
+Deleted: sha256:208fd3acdfad4e4e79ca97f80725f757d239dcf3e6ac1a4f356e68bbea196c2c
+Deleted: sha256:02a88cfff88f8556682dab1a86e2722e894583ee4bfc3096c1310dbbcfb1e959
+Untagged: diamol/ch03-web-ping:latest
+Untagged: diamol/ch03-web-ping@sha256:2f2dce710a7f287afc2d7bbd0d68d024bab5ee37a1f658cef46c64b1a69affd2
+Deleted: sha256:bfce5d697312823efb7296a50273b5cdcc75fea7c2be44cd0461f9b8a28ccf8c
+Deleted: sha256:12d9ba838c6db6a0536092ce4328360988caa791fd7a7ca9f165c5f5fbdf0c43
+Deleted: sha256:8298d7b08b55b96f07033064ded4c246abd6112b8ec983bc2e50045958c18184
+Untagged: diamol/ch02-hello-diamol:latest
+Untagged: diamol/ch02-hello-diamol@sha256:c4f45e04025d10d14d7a96df2242753b925e5c175c3bea9112f93bf9c55d4474
+Deleted: sha256:c65623b61864596c264340e2123e205139ebafd52694afd24fed35c226ad1daf
+Deleted: sha256:5467c0f933c7741ed2d345c50462b3699253bccd19b9bb0ba10514a1efabed72
+Deleted: sha256:19fe9b91aa30a4b437a57ce4a7a52b4cd98ee6f283e0db3b0b204b7f2fd10779
+Error response from daemon: conflict: unable to delete 8a8853903859 (cannot be forced) - image has dependent child images
+
+Tue Feb 27 10:16:39
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker image ls -f reference='diamol/*'
+REPOSITORY        TAG       IMAGE ID       CREATED       SIZE
+diamol/ch03-lab   latest    8a8853903859   2 years ago   6.89MB
+diamol/base       latest    e65ed3e91e57   2 years ago   6.89MB
+
+Tue Feb 27 10:16:44
+~/GitHub/diamol/ch04
+paulkaefer ~/GitHub/diamol/ch04 λ docker image rm -f  8a8853903859
+Error response from daemon: conflict: unable to delete 8a8853903859 (cannot be forced) - image has dependent child images
+```
+Interesting! I would have thought the lab was depended on the base, not the other way around.
+
+## Section 4.1: Who needs a build server when you have a Dockerfile?
 
 
 
