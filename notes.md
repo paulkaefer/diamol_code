@@ -52,7 +52,9 @@ One helpful image:
 * does the `dependency:go-offline` mean that once this runs once, we no longer have to be connected? From [here](https://maven.apache.org/plugins/maven-dependency-plugin/go-offline-mojo.html), it seems to install all needed dependencies, so it would appear that way.
   * ChatGPT helped. I asked:
 > explain like I'm a freshman in computer science (who knows how to write & compile Java code) what "mvn -B dependency:go-offline" means
+
 ...part of the answer:
+
 > ...
 > **go-offline**: This is the specific goal within the Dependency Plugin. When you execute this goal, Maven will download all the dependencies required for your project and store them in your local Maven repository. Going "offline" means that Maven will attempt to download all the necessary dependencies without connecting to the internet during subsequent builds, making your build process more self-contained.
 > 
