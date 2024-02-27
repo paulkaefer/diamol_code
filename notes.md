@@ -19,6 +19,9 @@ See `book_code.md` and `cleanup.md`, respectively.
   * nor the Windows Host Compute Service, for that matter
   * he recs *Docker in Action* (second edition) by Jeff Nickoloff and Stephen Kuenzli
 
+One helpful image:
+![](./attachments/Figure_1-2.jpg)
+
 ### Discussion notes
 * "Benefits of a VM without the downside" says Yong.
 
