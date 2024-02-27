@@ -915,6 +915,11 @@ Neat; opens in Docker Desktop:
 
 ## Section 4.2: App walkthrough: Java source code
 
+```bash
+cd ch04/exercises/image-of-the-day
+docker image build -t image-of-the-day .
+```
+There are errors.
 
 
 
