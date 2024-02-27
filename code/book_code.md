@@ -919,7 +919,12 @@ Neat; opens in Docker Desktop:
 cd ch04/exercises/image-of-the-day
 docker image build -t image-of-the-day .
 ```
-There are errors. Not on my personal computer, though!
+There are errors:
+```
+1.047 [ERROR] [ERROR] Some problems were encountered while processing the POMs:
+1.047 [FATAL] Non-resolvable parent POM for com.sixeyed.diamol:iotd-service:0.1.0: Could not transfer artifact org.springframework.boot:spring-boot-starter-parent:pom:2.1.3.RELEASE from/to central (https://repo.maven.apache.org/maven2): Transfer failed for https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-parent/2.1.3.RELEASE/spring-boot-starter-parent-2.1.3.RELEASE.pom and 'parent.relativePath' points at wrong local POM @ line 10, column 13
+```
+Not on my personal computer, though!
 ```
 [+] Building 105.1s (17/17) FINISHED                       docker:desktop-linux
  => [internal] load build definition from Dockerfile                       0.1s
@@ -928,7 +933,21 @@ There are errors. Not on my personal computer, though!
 ```
 
 ```bash
-docker container run --name accesslog -d -p 801:80 --network nat access-log
+λ docker network create nat
+0ea2cdff209e987d4a106a49c36e1a024ab5b758abf21e746f66bf3bbc270ac1
+```
+
+```bash
+cd ch04/exercises/access-log
+docker image build -t access-log .
+```
+The output includes:
+```
+1.232 npm ERR! code SELF_SIGNED_CERT_IN_CHAIN
+```
+
+```bash
+λ docker container run --name accesslog -d -p 801:80 --network nat access-log
 ```
 Output:
 ```
@@ -946,9 +965,6 @@ Ooh, `http://localhost:800/image` also shows:
 
 
 ## Section 4.4: App walkthrough: Go source code
-
-
-
 
 
 
