@@ -1032,13 +1032,197 @@ ch04-lab                                                  latest                
 Note: may have also created one with hash `7502731ea2223f1da7107e5ae764a8525acc7d101a1a851d0ac66a9bf65d39b9` on my Mac.
 
 
+## Section 5.2: Pushing your own images to Docker Hub
+```
+export dockerId="paulcarrot"
+docker login --username $dockerId
+```
+It worked. It also said:
+> For better security, log in with a limited-privilege personal access token. Learn more at https://docs.docker.com/go/access-tokens/
 
+```bash
+λ docker image tag image-gallery $dockerId/image-gallery:v1
+λ docker image ls --filter refe
+rence=image-gallery --filter reference='*/image-gallery'
+REPOSITORY                 TAG       IMAGE ID       CREATED        SIZE
+image-gallery              latest    bf5865de7158   45 hours ago   27.1MB
+paulcarrot/image-gallery   v1        bf5865de7158   45 hours ago   27.1MB
+λ docker image push $dockerId/image-gallery:v1
+The push refers to repository [docker.io/paulcarrot/image-gallery]
+179a37ef0366: Pushed 
+1fde46b75bd0: Pushed 
+8b51bcbf75f0: Pushed 
+04b6a91e2203: Pushed 
+f87269b94a71: Mounted from diamol/base 
+89ae5c4ee501: Mounted from diamol/base 
+v1: digest: sha256:5df838c969e42468350ca084d673a61889bb69fd895f59bfc3ed48291c7b5a52 size: 1573
+```
 
+Running `echo "https://hub.docker.com/r/$dockerId/image-gallery/tags"` outputs `https://hub.docker.com/r/paulcarrot/image-gallery/tags`.
 
+## Section 5.3: Running and using your own Docker registry
 
+```bash
+# run the registry with a restart flag so the container gets
+# restarted whenever you restart Docker:
+docker container run -d -p 5001:5000 --restart always diamol/registry
+```
+Output:
+```
+# with 5000:5000 from the book:
+Unable to find image 'diamol/registry:latest' locally
+latest: Pulling from diamol/registry
+31603596830f: Already exists 
+792f5419a843: Already exists 
+3fec9ac2e0fe: Pull complete 
+aea0fab1b866: Pull complete 
+b72408f4bc4f: Pull complete 
+6a2aeb3b52c0: Pull complete 
+Digest: sha256:49c5a928c870d496013d98d4357c93f35b1896a0385ef275664bc43e69b14950
+Status: Downloaded newer image for diamol/registry:latest
+20f8f49b7ee1e0a2b6d8b3915caf6382aa330a185ee721e387334757cce2f736
+docker: Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:5000 -> 0.0.0.0:0: listen tcp 0.0.0.0:5000: bind: address already in use.
 
+# tried again with 5001:5000:
+Unable to find image 'diamol/registry:latest' locally
+latest: Pulling from diamol/registry
+31603596830f: Already exists 
+792f5419a843: Already exists 
+3fec9ac2e0fe: Pull complete 
+aea0fab1b866: Pull complete 
+b72408f4bc4f: Pull complete 
+6a2aeb3b52c0: Pull complete 
+Digest: sha256:49c5a928c870d496013d98d4357c93f35b1896a0385ef275664bc43e69b14950
+Status: Downloaded newer image for diamol/registry:latest
+10040b0d7b1e7001999eb73fd86d6b4abd8e685a06a90fb1653d684fdfd961c0
+```
 
+```bash
+λ echo $'\n127.0.0.1 registry.local' | sudo tee -a /etc/hosts
 
+127.0.0.1 registry.local
 
+λ ping registry.local
+PING registry.local (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.050 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.086 ms
+64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.100 ms
+64 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=0.080 ms
+64 bytes from 127.0.0.1: icmp_seq=4 ttl=64 time=0.096 ms
+^C
+--- registry.local ping statistics ---
+5 packets transmitted, 5 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 0.050/0.082/0.100/0.018 ms
+```
+
+Using it!
+```bash
+docker image tag image-gallery registry.local:5001/gallery/ui:v1
+```
+
+Followed the steps to update my Docker client settings.
+```bash
+λ docker image push registry.local:5001/gallery/ui:v1
+The push refers to repository [registry.local:5001/gallery/ui]
+An image does not exist locally with the tag: registry.local:5001/gallery/ui
+```
+
+## Section 5.4: Using image tags effectively
+These ran with no output:
+```bash
+docker image tag image-gallery registry.local:5001/gallery/ui:latest
+docker image tag image-gallery registry.local:5001/gallery/ui:2
+docker image tag image-gallery registry.local:5001/gallery/ui:2.1
+docker image tag image-gallery registry.local:5001/gallery/ui:2.1.106
+```
+
+Testing:
+```bash
+λ docker pull registry.local:5001/gallery/ui:2.1.106
+Error response from daemon: manifest for registry.local:5001/gallery/ui:2.1.106 not found: manifest unknown: manifest unknown
+```
+
+## Section 5.5: Turning official images into golden images
+
+```bash
+cd ch05/exercises/dotnet-sdk
+docker image build -t golden/dotnetcore-sdk:3.0 .
+
+cd ../aspnet-runtime
+docker image build -t golden/aspnet-core:3.0 .
+```
+Output:
+```
+[+] Building 78.1s (8/8) FINISHED                          docker:desktop-linux
+ => [internal] load build definition from Dockerfile                       0.1s
+ => => transferring dockerfile: 249B                                       0.0s
+ => [internal] load .dockerignore                                          0.1s
+ => => transferring context: 2B                                            0.0s
+ => [internal] load metadata for mcr.microsoft.com/dotnet/core/sdk:3.0.10  1.3s
+ => [1/3] FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100@sha256:ee3376d5  75.1s
+ => => resolve mcr.microsoft.com/dotnet/core/sdk:3.0.100@sha256:ee3376d5f  0.0s
+ => => sha256:b7a128769df1909f91b589d0a4a2e1c1671aebc047a 7.81MB / 7.81MB  2.3s
+ => => sha256:1128949d0793d2435bb1f0640a777f32feee88b71 10.00MB / 10.00MB  2.2s
+ => => sha256:c7b7d16361e00faca0e9393f3f43923f25ceb121 50.38MB / 50.38MB  13.0s
+ => => sha256:65c0187e27b42bc45ea5ef98226c7ef37d1b706e100 2.01kB / 2.01kB  0.0s
+ => => sha256:170a7f2ec51a5cd1f6e68a3142ebb78f92949543f4d 6.54kB / 6.54kB  0.0s
+ => => sha256:ee3376d5f94027cb649dba88e3caefda8363623b575 2.88kB / 2.88kB  0.0s
+ => => sha256:667692510b7038b74e221f92eb33610e4968b669 51.77MB / 51.77MB  22.6s
+ => => sha256:efefb401e9dccd3e703e80b80fb9bbd3847f66c6d 13.70MB / 13.70MB  4.2s
+ => => sha256:9deb21478e67b8ff1256de3e2639cefcab485f 116.09MB / 116.09MB  68.0s
+ => => sha256:460e7bb4980298c8d51ffc08a56e3287127742d453 6.31kB / 6.31kB  13.3s
+ => => extracting sha256:c7b7d16361e00faca0e9393f3f43923f25ceb1210face878  5.3s
+ => => sha256:475935cb0b6d0d3f088b6637b4685a6c18050de4 12.40MB / 12.40MB  20.0s
+ => => extracting sha256:b7a128769df1909f91b589d0a4a2e1c1671aebc047a9f46b  0.7s
+ => => extracting sha256:1128949d0793d2435bb1f0640a777f32feee88b71d4fe234  0.7s
+ => => extracting sha256:667692510b7038b74e221f92eb33610e4968b669c8a71837  5.4s
+ => => extracting sha256:efefb401e9dccd3e703e80b80fb9bbd3847f66c6d7c64d51  0.3s
+ => => extracting sha256:9deb21478e67b8ff1256de3e2639cefcab485f4fd5e25355  6.1s
+ => => extracting sha256:460e7bb4980298c8d51ffc08a56e3287127742d4536b3516  0.0s
+ => => extracting sha256:475935cb0b6d0d3f088b6637b4685a6c18050de45a68c3e9  0.7s
+ => [internal] load build context                                          0.0s
+ => => transferring context: 107B                                          0.0s
+ => [2/3] WORKDIR src                                                      1.4s
+ => [3/3] COPY global.json .                                               0.0s
+ => exporting to image                                                     0.1s
+ => => exporting layers                                                    0.1s
+ => => writing image sha256:788f703eea82f1de38ed3f41b5f964fa148d8979aedf8  0.0s
+ => => naming to docker.io/golden/dotnetcore-sdk:3.0                       0.0s
+
+[+] Building 18.8s (5/5) FINISHED                          docker:desktop-linux
+ => [internal] load build definition from Dockerfile                       0.1s
+ => => transferring dockerfile: 230B                                       0.0s
+ => [internal] load .dockerignore                                          0.1s
+ => => transferring context: 2B                                            0.0s
+ => [internal] load metadata for mcr.microsoft.com/dotnet/core/aspnet:3.0  0.6s
+ => [1/1] FROM mcr.microsoft.com/dotnet/core/aspnet:3.0@sha256:559b6a8ef  17.9s
+ => => resolve mcr.microsoft.com/dotnet/core/aspnet:3.0@sha256:559b6a8efa  0.0s
+ => => sha256:579be85d9bf6def816023c880770083e9c15120a0fc 4.77kB / 4.77kB  0.0s
+ => => sha256:68ced04f60ab5c7a5f1d0b0b4e7572c5a4c8cce44 27.09MB / 27.09MB  9.9s
+ => => sha256:e936bd534ffb9280632b9c0c87e0f5ab3031e53da 17.06MB / 17.06MB  7.6s
+ => => sha256:caf64655bcbb2fc4b0077421d3d4d74abbcbeae0b9e 1.02MB / 1.02MB  0.2s
+ => => sha256:559b6a8efaff85116a01db6047cd91aaf1b5d6d425c 2.53kB / 2.53kB  0.0s
+ => => sha256:99fbfe67ce9c6c413efbc346c97f2881122be29216f 1.38kB / 1.38kB  0.0s
+ => => sha256:d1927dbcbcab79b6a3a9073a07a412fcbd17609d 31.21MB / 31.21MB  16.0s
+ => => sha256:64166705448110ce6a01140b01312c5bafacd0e4fe 8.09MB / 8.09MB  11.4s
+ => => extracting sha256:68ced04f60ab5c7a5f1d0b0b4e7572c5a4c8cce44866513d  5.4s
+ => => extracting sha256:e936bd534ffb9280632b9c0c87e0f5ab3031e53da489a242  0.8s
+ => => extracting sha256:caf64655bcbb2fc4b0077421d3d4d74abbcbeae0b9e1e860  0.0s
+ => => extracting sha256:d1927dbcbcab79b6a3a9073a07a412fcbd17609d998f2cbc  1.2s
+ => => extracting sha256:64166705448110ce6a01140b01312c5bafacd0e4fe686195  0.2s
+ => exporting to image                                                     0.0s
+ => => exporting layers                                                    0.0s
+ => => writing image sha256:1313317e956fec2e77668b4715fcc4a8a07d92141bc93  0.0s
+ => => naming to docker.io/golden/aspnet-core:3.0                          0.0s
+```
+
+### Chapter 4 Lab
+`http://registry.local:5000/v2` does show `{}` after I click to contine, despite my browser warning me about the insecure connection
+Same with `http://registry.local:5001/v2/`.
+
+```bash
+λ curl http://registry.local:5001/v2/gallery/ui/tags/list
+{"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known to registry","detail":{"name":"gallery/ui"}}]}
+```
 
 

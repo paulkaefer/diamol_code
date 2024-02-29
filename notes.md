@@ -63,5 +63,12 @@ One helpful image:
 * "Docker itself is written in Go"
 * "Multi-stage Dockerfiles make your project entirely portable. You might use Jenkins to build your apps right now, but you could try AppVeyor’s managed CI service or Azure DevOps without having to write any new pipeline code--they all support Docker, so your pipeline is just `docker image build`."
 
+## Chapter 5: Sharing images with Docker Hub and other registries
+* Instead of `docker.io/diamol/golang:latest` (URL listed early), I see `https://hub.docker.com/r/diamol/golang`. But maybe `docker.io` will work when pulling?
+* "Layers are only physically uploaded to the registry if there isn’t an existing match for that layer's hash."
+  * cool! but I also wonder if there have ever been collisions...
+* Changed the steps slightly for bypassing restrictions on `registry.local:*`... Settings >> Resources >> Proxies & added under "bypass..."
+* "use specific image tags for the base images in your own Dockerfiles"
+
 # Once complete:
 - [ ] consider a certification
