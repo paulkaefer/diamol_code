@@ -70,5 +70,17 @@ One helpful image:
 * Changed the steps slightly for bypassing restrictions on `registry.local:*`... Settings >> Resources >> Proxies & added under "bypass..."
 * "use specific image tags for the base images in your own Dockerfiles"
 
+### Discussion
+```
+λ docker images registry.local:5001/gallery/ui --format="{{ .Tag }}"
+```
+Outputs:
+```
+2
+2.1
+2.1.106
+latest
+```
+
 # Once complete:
 - [ ] consider a certification
