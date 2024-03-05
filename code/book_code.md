@@ -1485,6 +1485,9 @@ PS> curl -X DELETE http://registry.local:5000/v2/gallery/ui/manifests/sha256:f5a
 
 PS> curl http://registry.local:5000/v2/gallery/ui/tags/list
 {"name":"gallery/ui","tags":["v1","latest"]}
+
+(cmd)> curl -X DELETE http://registry.local:5000/v2/gallery/ui/manifests/sha256:f5a0c941440e051e716343e2d9e6569470fbd454d0eb1f71ac03a1f9b1b595bdc
+{"errors":[{"code":"DIGEST_INVALID","message":"provided digest did not match uploaded content"}]}
 ```
 
 
