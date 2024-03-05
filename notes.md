@@ -81,6 +81,11 @@ Outputs:
 2.1.106
 latest
 ```
+### Discussion #2
+* The concept of manifests was in the Lab solution, but not explained in the chapter.
+  * it's basically metadata about an image: https://docs.docker.com/reference/cli/docker/manifest/
+* We tried `docker manifest inspect diamol/golang` and looked at the output.
+* local registry doesn't seem to work exactly the way the book presents it. that said, we searched the text for "5000" and it's only in chapters 3 (unrelated) and 5 (used as port). So we get the concepts & can move on!
 
 # Once complete:
 - [ ] consider a certification
