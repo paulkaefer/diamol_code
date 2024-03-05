@@ -1281,6 +1281,20 @@ The push refers to repository [registry.local:5001/gallery/ui]
 An image does not exist locally with the tag: registry.local:5001/gallery/ui
 ```
 
+On Windows:
+```PowerShell
+PS> docker image tag image-gallery registry.local:5000/gallery/ui:v1
+PS> docker image push registry.local:5000/gallery/ui:v1
+The push refers to repository [registry.local:5000/gallery/ui]
+a26d56b97c91: Pushed
+73bad7eebeba: Pushed
+223d79037852: Pushed
+571617631403: Pushed
+f87269b94a71: Pushed
+89ae5c4ee501: Pushed
+v1: digest: sha256:a995c6888bb77475502e69c439165cc38b2cdad3a268a8275aa290ae284e8dcb size: 1573
+```
+
 ## Section 5.4: Using image tags effectively
 These ran with no output:
 ```bash
@@ -1288,6 +1302,14 @@ docker image tag image-gallery registry.local:5001/gallery/ui:latest
 docker image tag image-gallery registry.local:5001/gallery/ui:2
 docker image tag image-gallery registry.local:5001/gallery/ui:2.1
 docker image tag image-gallery registry.local:5001/gallery/ui:2.1.106
+```
+
+On Windows:
+```PowerShell
+docker image tag image-gallery registry.local:5000/gallery/ui:latest
+docker image tag image-gallery registry.local:5000/gallery/ui:2
+docker image tag image-gallery registry.local:5000/gallery/ui:2.1
+docker image tag image-gallery registry.local:5000/gallery/ui:2.1.106
 ```
 
 Testing:
@@ -1317,6 +1339,27 @@ The push refers to repository [registry.local:5000/gallery/ui]
 An image does not exist locally with the tag: registry.local:5000/gallery/ui
 PS> docker pull registry.local:5000/gallery/ui:2.1.106
 Error response from daemon: manifest for registry.local:5000/gallery/ui:2.1.106 not found: manifest unknown: manifest unknown
+```
+After re-doing some of the steps above (I may have used `:5001` the first time), I see:
+```PowerShell
+PS> docker pull registry.local:5000/gallery/ui
+Using default tag: latest
+Error response from daemon: manifest for registry.local:5000/gallery/ui:latest not found: manifest unknown: manifest unknown
+PS> docker images
+REPOSITORY                       TAG       IMAGE ID       CREATED          SIZE
+image-gallery                    latest    ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5000/gallery/ui   2         ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5000/gallery/ui   2.1       ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5000/gallery/ui   2.1.106   ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5000/gallery/ui   latest    ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5000/gallery/ui   v1        ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5001/gallery/ui   2         ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5001/gallery/ui   2.1       ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5001/gallery/ui   2.1.106   ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5001/gallery/ui   latest    ea959d038ba6   17 minutes ago   27.1MB
+registry.local:5001/gallery/ui   v1        ea959d038ba6   17 minutes ago   27.1MB
+access-log                       latest    52abfeb47ac4   18 minutes ago   92.2MB
+diamol/registry                  latest    1b466d248ca0   3 years ago      27.4MB
 ```
 
 ## Section 5.5: Turning official images into golden images
