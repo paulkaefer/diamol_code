@@ -1076,6 +1076,25 @@ b296e92a9fa1   access-log         "docker-entrypoint.s…"   20 minutes ago   Up
 It works, is beautiful (screenshot below), and I now see `{"logs":2}` at `http://localhost:801/stats`.
 ![](./attachments/ch04/Section_4.4_Go_app_running.png)
 
+On Windows:
+```PowerShell
+PS> docker image build -t image-gallery .
+[+] Building 63.5s (15/15) FINISHED
+...
+PS> docker network create nat
+d9334b040d2c100cc2a120aec343efaa1d6d7658c9c61873e33a7cdea564b1fe
+PS> cd ../access-log/
+PS> docker image build -t access-log .
+[+] Building 13.5s (13/13) FINISHED
+...
+PS> docker container run --name accesslog -d -p 801:80 --network nat access-log
+b6f17414b515b7513f8ab279b6b96e3efdcdae3661ef17690eab48489de408f1
+PS> docker container run -d -p 802:80 --network nat image-gallery
+b09803357b82d3a01e968d50a2d08d4998f8358ff2d27bdac5e3239a0da9cbc2
+```
+Hmm, timed out. `http://localhost:801/` shows `{"code":"ResourceNotFound","message":"/ does not exist"}`.
+Will continue in Chapter 5 anyway...
+
 ## Section 4.5: Understanding multi-stage Dockerfiles
 
 ## Lab
@@ -1140,7 +1159,26 @@ f87269b94a71: Mounted from diamol/base
 v1: digest: sha256:5df838c969e42468350ca084d673a61889bb69fd895f59bfc3ed48291c7b5a52 size: 1573
 ```
 
-Running `echo "https://hub.docker.com/r/$dockerId/image-gallery/tags"` outputs `https://hub.docker.com/r/paulcarrot/image-gallery/tags`.
+Windows:
+```PowerShell
+PS> docker image tag image-gallery $dockerId/image-gallery:v2
+PS> docker image ls --filter reference=image-gallery --filter reference='*/image-gallery'
+REPOSITORY                 TAG       IMAGE ID       CREATED         SIZE
+image-gallery              latest    f65c2609fbd9   7 minutes ago   27.1MB
+paulcarrot/image-gallery   v2        f65c2609fbd9   7 minutes ago   27.1MB
+PS> docker image push $dockerId/image-gallery:v2
+The push refers to repository [docker.io/paulcarrot/image-gallery]
+74088eb05a12: Pushed
+f37472f6baef: Pushed
+83ecb1a17f5a: Pushed
+00717ff0a783: Pushed
+f87269b94a71: Layer already exists
+89ae5c4ee501: Layer already exists
+v2: digest: sha256:73020a683ec1f724c133f36862650a44532b090976639aff3dea928b94474115 size: 1573
+```
+I do see `v2` at https://hub.docker.com/repository/docker/paulcarrot/image-gallery/general.
+
+On Mac, running `echo "https://hub.docker.com/r/$dockerId/image-gallery/tags"` outputs `https://hub.docker.com/r/paulcarrot/image-gallery/tags`.
 
 ## Section 5.3: Running and using your own Docker registry
 
@@ -1179,6 +1217,22 @@ Status: Downloaded newer image for diamol/registry:latest
 10040b0d7b1e7001999eb73fd86d6b4abd8e685a06a90fb1653d684fdfd961c0
 ```
 
+Similar on Windows:
+```PowerShell
+PS> docker container run -d -p 5000:5000 --restart always diamol/registry
+Unable to find image 'diamol/registry:latest' locally
+latest: Pulling from diamol/registry
+31603596830f: Already exists
+792f5419a843: Already exists
+3fec9ac2e0fe: Pull complete
+aea0fab1b866: Pull complete
+b72408f4bc4f: Pull complete
+6a2aeb3b52c0: Pull complete
+Digest: sha256:49c5a928c870d496013d98d4357c93f35b1896a0385ef275664bc43e69b14950
+Status: Downloaded newer image for diamol/registry:latest
+5be9ae0782288e85136f5ea85e18358c6ff788479e26e9d9d9885cd37e136764
+```
+
 ```bash
 λ echo $'\n127.0.0.1 registry.local' | sudo tee -a /etc/hosts
 
@@ -1196,8 +1250,25 @@ PING registry.local (127.0.0.1): 56 data bytes
 5 packets transmitted, 5 packets received, 0.0% packet loss
 round-trip min/avg/max/stddev = 0.050/0.082/0.100/0.018 ms
 ```
+On Windows, I ran `Add-Content -Value "127.0.0.1 registry.local" -Path /windows/system32/drivers/etc/hosts` in an Admin PS window.
+```PowerShell
+PS> ping registry.local
 
-Using it!
+Pinging registry.local [127.0.0.1] with 32 bytes of data:
+Reply from 127.0.0.1: bytes=32 time<1ms TTL=128
+Reply from 127.0.0.1: bytes=32 time<1ms TTL=128
+Reply from 127.0.0.1: bytes=32 time<1ms TTL=128
+Reply from 127.0.0.1: bytes=32 time<1ms TTL=128
+
+Ping statistics for 127.0.0.1:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 0ms, Maximum = 0ms, Average = 0ms
+PS> docker image tag image-gallery registry.local:5000/gallery/ui:v1
+```
+Might have messed up the insecure registry piece. Resetting Docker Desktop to factory defaults...
+
+Attempting to use the registry on Mac:
 ```bash
 docker image tag image-gallery registry.local:5001/gallery/ui:v1
 ```
