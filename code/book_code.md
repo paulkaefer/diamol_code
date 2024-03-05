@@ -42,6 +42,39 @@ Server: Docker Desktop 4.27.1 (136059)
 Docker Compose version v2.24.3-desktop.1
 ```
 
+Trying on Windows:
+```CMD
+C:\Users\paulk\GitHub>docker version
+Client:
+ Cloud integration: v1.0.35+desktop.11
+ Version:           25.0.3
+ API version:       1.44
+ Go version:        go1.21.6
+ Git commit:        4debf41
+ Built:             Tue Feb  6 21:13:02 2024
+ OS/Arch:           windows/amd64
+ Context:           default
+
+Server: Docker Desktop 4.28.0 (139021)
+ Engine:
+  Version:          25.0.3
+  API version:      1.44 (minimum version 1.24)
+  Go version:       go1.21.6
+  Git commit:       f417435
+  Built:            Tue Feb  6 21:14:25 2024
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          1.6.28
+  GitCommit:        ae07eda36dd25f8a1b98dfbf587313b99c0190bb
+ runc:
+  Version:          1.1.12
+  GitCommit:        v1.1.12-0-g51d5e94
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+```
+
 Ran `docker container rm -f $(docker container ls -aq)` after reviewing using the inner command + looking at Docker Desktop. Output:
 ```
 0abff2d96d5b
@@ -116,8 +149,46 @@ My address is:
 inet addr:<redacted> Bcast:<redacted> Mask:255.255.0.0
 ---------------------
 ```
-
 The IP addresses stayed the same.
+
+...and on Windows:
+```
+C:\Users\paulk\GitHub\diamol>docker container run diamol/ch02-hello-diamol
+Unable to find image 'diamol/ch02-hello-diamol:latest' locally
+latest: Pulling from diamol/ch02-hello-diamol
+31603596830f: Pull complete
+93931504196e: Pull complete
+d7b1f3678981: Pull complete
+Digest: sha256:c4f45e04025d10d14d7a96df2242753b925e5c175c3bea9112f93bf9c55d4474
+Status: Downloaded newer image for diamol/ch02-hello-diamol:latest
+---------------------
+Hello from Chapter 2!
+---------------------
+My name is:
+94340ec4197a
+---------------------
+Im running on:
+Linux 5.15.133.1-microsoft-standard-WSL2 x86_64
+---------------------
+My address is:
+inet addr:172.17.0.2 Bcast:172.17.255.255 Mask:255.255.0.0
+
+...
+
+C:\Users\paulk\GitHub\diamol>docker container run diamol/ch02-hello-diamol
+---------------------
+Hello from Chapter 2!
+---------------------
+My name is:
+967b94072646
+---------------------
+Im running on:
+Linux 5.15.133.1-microsoft-standard-WSL2 x86_64
+---------------------
+My address is:
+inet addr:172.17.0.2 Bcast:172.17.255.255 Mask:255.255.0.0
+---------------------
+```
 
 ## Section 2.2: So what is a container?
 
@@ -154,6 +225,7 @@ PING paulkaefer.com (45.55.201.68): 56 data bytes
 7 packets transmitted, 7 packets received, 0% packet loss
 round-trip min/avg/max = 64.640/67.294/73.681 ms
 ```
+Similar on Windows, thanks to WSL2.
 
 ```bash
 λ docker container ls
@@ -434,6 +506,7 @@ aa93dcb21074
 be0202fbc034
 e66928f48980
 ```
+Worked on PowerShell, but not cmd.exe.
 
 ## Section 2.5: Understanding how Docker runs containers
 
@@ -1040,6 +1113,15 @@ docker login --username $dockerId
 It worked. It also said:
 > For better security, log in with a limited-privilege personal access token. Learn more at https://docs.docker.com/go/access-tokens/
 
+On Windows:
+```PowerShell
+PS C:\Users\paulk>  $dockerId="paulcarrot"
+PS C:\Users\paulk> docker login --username $dockerId
+Password:
+
+Login Succeeded
+```
+
 ```bash
 λ docker image tag image-gallery $dockerId/image-gallery:v1
 λ docker image ls --filter refe
@@ -1216,7 +1298,7 @@ Output:
  => => naming to docker.io/golden/aspnet-core:3.0                          0.0s
 ```
 
-### Chapter 4 Lab
+### Chapter 5 Lab
 `http://registry.local:5000/v2` does show `{}` after I click to contine, despite my browser warning me about the insecure connection
 Same with `http://registry.local:5001/v2/`.
 

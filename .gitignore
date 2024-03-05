@@ -1,6 +1,9 @@
 # Mac stuff:
 *.DS_Store*
 
+# Notepad++ auto-backup files:
+*.bak
+
 # from the diamol repo:
 
 ## Ignore Visual Studio temporary files, build results, and
