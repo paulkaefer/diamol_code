@@ -1445,4 +1445,46 @@ Same with `http://registry.local:5001/v2/`.
 {"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known to registry","detail":{"name":"gallery/ui"}}]}
 ```
 
+Windows:
+```PowerShell
+PS> curl http://registry.local:5000/v2/gallery/ui/tags/list
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"name":"gallery/ui","tags":["v1","latest"]}
+
+RawContent        : HTTP/1.1 200 OK
+                    Docker-Distribution-Api-Version: registry/2.0
+                    X-Content-Type-Options: nosniff
+                    Content-Length: 45
+                    Content-Type: application/json; charset=utf-8
+                    Date: Tue, 05 Mar 2024 18:38:40 GMT...
+Forms             : {}
+Headers           : {[Docker-Distribution-Api-Version, registry/2.0], [X-Content-Type-Options, nosniff],
+                    [Content-Length, 45], [Content-Type, application/json; charset=utf-8]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 45
+PS> curl --head http://registry.local:5000/v2/gallery/ui/manifests/latest -H 'Accept: application/vnd.docker.distribution.manifest.v2+json'
+HTTP/1.1 200 OK
+Content-Length: 5176
+Content-Type: application/vnd.docker.distribution.manifest.v1+prettyjws
+Docker-Content-Digest: sha256:f5a0c941440e051e716343e2d9e6569470fbd454d0eb1f71ac03a1f9b1b595bd
+Docker-Distribution-Api-Version: registry/2.0
+Etag: "sha256:f5a0c941440e051e716343e2d9e6569470fbd454d0eb1f71ac03a1f9b1b595bd"
+X-Content-Type-Options: nosniff
+Date: Tue, 05 Mar 2024 18:40:22 GMT
+
+curl: (6) Could not resolve host: application
+
+PS> curl -X DELETE http://registry.local:5000/v2/gallery/ui/manifests/sha256:f5a0c941440e051e716343e2d9e6569470fbd454d0eb1f71ac03a1f9b1b595bd
+{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}
+
+PS> curl http://registry.local:5000/v2/gallery/ui/tags/list
+{"name":"gallery/ui","tags":["v1","latest"]}
+```
+
 
