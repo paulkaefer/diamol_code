@@ -1316,7 +1316,7 @@ PS> docker push registry.local:5000/gallery/ui:2.1.106
 The push refers to repository [registry.local:5000/gallery/ui]
 An image does not exist locally with the tag: registry.local:5000/gallery/ui
 PS> docker pull registry.local:5000/gallery/ui:2.1.106
-Error response from daemon: pull access denied for registry.local:5001/gallery/ui, repository does not exist or may require 'docker login': denied: connecting to registry.local:5001: connecting to 127.0.0.1:5001: dial tcp 127.0.0.1:5001: connectex: No connection could be made because the target machine actively refused it.
+Error response from daemon: manifest for registry.local:5000/gallery/ui:2.1.106 not found: manifest unknown: manifest unknown
 ```
 
 ## Section 5.5: Turning official images into golden images
