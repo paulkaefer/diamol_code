@@ -1620,8 +1620,10 @@ databases/todo-list.db: SQLite 3.x database, last written using SQLite version 3
 
 ## Section 6.4: Limitations of filesystem mounts
 
+## Section 6.5: Understanding how the container filesystem is built
 
-
+## Chapter 6 Lab
+I looked over the instructions & README. The concepts make sense.
 
 
 

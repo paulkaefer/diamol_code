@@ -89,6 +89,13 @@ latest
 
 ## Chapter 6
 * bind mounting to have any arbitrary folder path surfaced to your container (such as a network drive)
+* From Section 6.5, "Every container has a single disk, which is a virtual disk that Docker pieces together from several sources. Docker calls this the union filesystem."
+
+### Useful links
+* Author's YouTube (link from lab's README file): https://is.gd/z8qHga
+
+### Discussion notes
+* clever the way the image layers are read-only, allowing for repeatability
 
 # Once complete:
 - [ ] consider a certification
