@@ -87,5 +87,8 @@ latest
 * We tried `docker manifest inspect diamol/golang` and looked at the output.
 * local registry doesn't seem to work exactly the way the book presents it. that said, we searched the text for "5000" and it's only in chapters 3 (unrelated) and 5 (used as port). So we get the concepts & can move on!
 
+## Chapter 6
+* bind mounting to have any arbitrary folder path surfaced to your container (such as a network drive)
+
 # Once complete:
 - [ ] consider a certification

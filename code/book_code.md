@@ -1490,4 +1490,159 @@ PS> curl http://registry.local:5000/v2/gallery/ui/tags/list
 {"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}
 ```
 
+# Chapter 6: Using Docker volumes for persistent storage
+
+## Section 6.1: Why data in containers is not permanent
+```bash
+λ docker container run --name rn1 diamol/ch06-random-number
+Unable to find image 'diamol/ch06-random-number:latest' locally
+latest: Pulling from diamol/ch06-random-number
+31603596830f: Already exists 
+98992a293de3: Pull complete 
+353e82f8473e: Pull complete 
+d03cc88bf2c6: Pull complete 
+Digest: sha256:aea876d5ff413b6e5f2d2bc13f0c70b562e7a2facc215798f22ca5344026e2ce
+Status: Downloaded newer image for diamol/ch06-random-number:latest
+λ docker container run --name rn2 diamol/ch06-random-number
+```
+No output for the second command.
+```bash
+λ docker container cp rn1:/random/number.txt number1.txt
+Successfully copied 2.05kB to /Users/paulkaefer/Documents/GitHub/diamol/ch06/number1.txt
+λ docker container cp rn2:/random/number.txt number2.txt
+Successfully copied 2.05kB to /Users/paulkaefer/Documents/GitHub/diamol/ch06/number2.txt
+λ cat number1.txt
+7801
+λ cat number2.txt
+22307
+```
+
+
+```bash
+λ docker container run --name f1 diamol/ch06-file-display
+Unable to find image 'diamol/ch06-file-display:latest' locally
+latest: Pulling from diamol/ch06-file-display
+31603596830f: Already exists 
+792f5419a843: Already exists 
+2755907779b3: Pull complete 
+Digest: sha256:98c52776132a793d22524080e16a37db52de6a72dc5687cd5f6ae371d14dad12
+Status: Downloaded newer image for diamol/ch06-file-display:latest
+https://www.manning.com/books/learn-docker-in-a-month-of-lunches
+λ echo "https://paulkaefer.com" > url.txt
+λ docker container cp url.txt f1:/input.txt
+Successfully copied 2.05kB to f1:/input.txt
+λ docker container start --attach f1
+https://paulkaefer.com
+```
+
+"Modifying files in a container does not affect the image, and the container's data is transient."
+```bash
+λ docker container run --name f2 diamol/ch06-file-display
+https://www.manning.com/books/learn-docker-in-a-month-of-lunches
+λ docker container rm -f f1
+f1
+λ docker container cp f1:/input.txt .
+Error response from daemon: No such container: f1
+```
+
+## Section 6.2: Running containers with Docker volumes
+
+```bash
+λ docker container run --name todo1 -d -p 8010:80 diamol/ch06-todo-list
+Unable to find image 'diamol/ch06-todo-list:latest' locally
+latest: Pulling from diamol/ch06-todo-list
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+e9d8a968b003: Pull complete 
+875f39a539e2: Pull complete 
+Digest: sha256:a7367ad4c81543d21f2b131a98c8e4c4fb75abe67df5d66ccdf34e0bd34f9b9a
+Status: Downloaded newer image for diamol/ch06-todo-list:latest
+91f1d3245dddae240bd6385517e732da340422eb7f4605115c1e11d7c7b1bc3e
+λ docker container inspect --format '{{.Mounts}}' todo1
+[{volume b310af7927db0e76491e39f1965ba43b36c93a8afce9f192a4af22e11b8b1f30 /var/lib/docker/volumes/b310af7927db0e76491e39f1965ba43b36c93a8afce9f192a4af22e11b8b1f30/_data /data local  true }]
+λ docker volume ls
+DRIVER    VOLUME NAME
+local     b310af7927db0e76491e39f1965ba43b36c93a8afce9f192a4af22e11b8b1f30
+```
+
+The app at `http://localhost:8010/` works!!
+
+```bash
+# this new container will have its own volume
+λ docker container run --name todo2 -d diamol/ch06-todo-list
+848a2ef785fe22c645ab3ea7db2b8c4d153cbbf1161ecd959126a6730e03b623
+# on Linux:
+λ docker container exec todo2 ls /data
+# this container will share the volume from todo1
+λ docker container run -d --name t3 --volumes-from todo1 diamol/ch06-todo-list
+c5797692f45febbab9da5e16f932db5fe774a749af5503236ed60ab121891f15
+# on Linux:
+λ docker container exec t3 ls /data
+todo-list.db
+```
+
+```bash
+# save the target file path in a variable:
+target='/data'
+
+# create a volume to store the data:
+docker volume create todo-list
+
+# run the v1 app, using the volume for app storage:
+docker container run -d -p 8011:80 -v todo-list:$target --name todo-v1 diamol/ch06-todo-list
+
+# add some data through the web app at http://localhost:8011
+
+# remove the v1 app container:
+docker container rm -f todo-v1
+
+# and run a v2 container using the same volume for storage:
+docker container run -d -p 8011:80 -v todo-list:$target --name todo-v2 diamol/ch06-todo-list:v2
+```
+It works!
+
+## Section 6.3: Running containers with filesystem mounts
+
+```bash
+λ source="$(pwd)/databases" && target='/data'
+λ mkdir ./databases
+λ docker container run --mount type=bind,source=$source,target=$target -d -p 8012:80 diamol/ch06-todo-list
+λ curl http://localhost:8012
+λ ls ./databases
+todo-list.db
+λ file databases
+/todo-list.db 
+databases/todo-list.db: SQLite 3.x database, last written using SQLite version 3028000, writer version 2, read version 2, file counter 2, database pages 3, cookie 0x1, schema 4, UTF-8, version-valid-for 2
+```
+
+## Section 6.4: Limitations of filesystem mounts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
