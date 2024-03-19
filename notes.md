@@ -4,7 +4,7 @@ See `book_code.md` and `cleanup.md`, respectively.
 # Preface
 * author started working with Docker in 2014
 
-# Part 1. Understanding Docker containers and images
+# Part 1: Understanding Docker containers and images
 
 ## Chapter 1: Before you begin
 * links: http://mng.bz/04lW, http://mng.bz/K29E (note both have equivalents like https://shortener.manning.com/K29E)
@@ -87,12 +87,27 @@ latest
 * We tried `docker manifest inspect diamol/golang` and looked at the output.
 * local registry doesn't seem to work exactly the way the book presents it. that said, we searched the text for "5000" and it's only in chapters 3 (unrelated) and 5 (used as port). So we get the concepts & can move on!
 
-## Chapter 6
+## Chapter 6: Using Docker Volumes For Persistent Storage
 * bind mounting to have any arbitrary folder path surfaced to your container (such as a network drive)
 * From Section 6.5, "Every container has a single disk, which is a virtual disk that Docker pieces together from several sources. Docker calls this the union filesystem."
 
+# Part 2: Running distributed applications in containers
+* "...use Docker and Docker Compose to define, run, and manage applications that run across multiple containers." --> CI pipeline; health checks/observability
+
+## Chapter 7: Running multi-container apps with Docker Compose
+* "Docker is ideally suited to running distributed applications--from n-tier monoliths to modern microservices."
+* "[YAML] translates easily to JSON (which is the standard language for APIs)"
+* Section 7.2 references the NASA APOD API app as an example: Java frontend (website), API in Go, and a Node log collector.
+* Section 7.4 mentions [Sqlectron](https://sqlectron.github.io/).
+
+### Section 7.5: Understanding the problem Docker Compose solves
+* "Docker Compose is a very neat way of describing the setup for complex distributed apps in a small, clear file format. The Compose YAML file is effectively a deployment guide for your application, but it’s miles ahead of a guide written as a Word document."
+* Docker Compose basically kicks things off, but that's where it ends.
+* might want to look up Docker Swarm vs. Kubernetes
+
 ### Useful links
 * Author's YouTube (link from lab's README file): https://is.gd/z8qHga
+* [Docker Compose Viz](https://github.com/pmsipilot/docker-compose-viz)
 
 ### Discussion notes
 * clever the way the image layers are read-only, allowing for repeatability

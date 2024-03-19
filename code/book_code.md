@@ -1625,26 +1625,227 @@ databases/todo-list.db: SQLite 3.x database, last written using SQLite version 3
 ## Chapter 6 Lab
 I looked over the instructions & README. The concepts make sense.
 
+# Chapter 7: Running multi-container apps with Docker Compose
+
+## Section 7.1: The anatomy of a Docker Compose file
+```bash
+λ docker network create nat
+Error response from daemon: network with name nat already exists
+λ cd ./ch07/exercises/todo-list
+λ  docker-compose up
+...
+```
+Seems to be working, as I see messages like `Now listening on: http://[::]:80`. Also the app works at `http://localhost:8020/`!
+
+## Section 7.2: Running a multi-container application with Compose
+```bash
+cd ../image-of-the-day/
+docker-compose up --detach
+```
+Final output:
+```
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 22/22
+ ✔ iotd 7 layers [⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                        14.6s 
+   ✔ 45b42c59be33 Pull complete                                           1.8s 
+   ✔ c3f1fbf102b7 Pull complete                                           1.4s 
+   ✔ 1067f9902c49 Pull complete                                           1.3s 
+   ✔ e1e4050aab9e Pull complete                                           3.1s 
+   ✔ 7f89f58f441d Pull complete                                           2.1s 
+   ✔ 6d7217f14fb6 Pull complete                                           2.3s 
+   ✔ fffa27f83635 Pull complete                                           4.0s 
+ ✔ image-gallery 5 layers [⣿⣿⣿⣿⣿]      0B/0B      Pulled                  2.8s 
+   ✔ 31603596830f Already exists                                          0.0s 
+   ✔ 792f5419a843 Already exists                                          0.0s 
+   ✔ 06087fe2cb64 Pull complete                                           0.4s 
+   ✔ ceaf7526f585 Pull complete                                           0.4s 
+   ✔ a5e9a0247b0e Pull complete                                           0.6s 
+ ✔ accesslog 7 layers [⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                    6.8s 
+   ✔ e7c96db7181b Already exists                                          0.0s 
+   ✔ bbec46749066 Already exists                                          0.0s 
+   ✔ 89e5cf82282d Already exists                                          0.0s 
+   ✔ 5de6895db72f Already exists                                          0.0s 
+   ✔ 3b73adc3529c Pull complete                                           0.8s 
+   ✔ bec597f6a360 Pull complete                                           0.9s 
+   ✔ 55a5fa2b3418 Pull complete                                           1.0s 
+[+] Running 3/3
+ ✔ Container image-of-the-day-iotd-1           Started                    2.0s 
+ ✔ Container image-of-the-day-accesslog-1      Started                    2.0s 
+ ✔ Container image-of-the-day-image-gallery-1  Started                    2.4s 
+```
+And `http://localhost:8010/` shows the image! [A Picturesque Equinox Sunset](https://apod.nasa.gov/apod/image/2403/EquinoxSunset_Dyer_960.jpg) by [Alan Dyer](https://www.amazingsky.com/). See also [TWAN](https://twanight.org/).
+
+Scaling:
+```bash
+λ docker-compose up -d --scale iotd=3
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 5/5
+ ✔ Container image-of-the-day-accesslog-1      Running                    0.0s 
+ ✔ Container image-of-the-day-iotd-1           Running                    0.0s 
+ ✔ Container image-of-the-day-iotd-3           Started                    0.6s 
+ ✔ Container image-of-the-day-iotd-2           Started                    1.0s 
+ ✔ Container image-of-the-day-image-gallery-1  Running                    0.0s
+```
+After refreshing the page a few times:
+```bash
+λ docker-compose logs --tail=1 iotd
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+iotd-2  | 2024-03-19 13:58:52.502  INFO 1 --- [           main] iotd.Application                         : Started Application in 6.102 seconds (JVM running for 7.058)
+iotd-1  | 2024-03-19 13:55:43.627  INFO 1 --- [p-nio-80-exec-1] iotd.ImageController                     : Fetched new APOD image from NASA
+iotd-3  | 2024-03-19 13:58:52.487  INFO 1 --- [           main] iotd.Application                         : Started Application in 6.457 seconds (JVM running for 7.406)
+```
 
 
 
+```bash
+λ docker-compose stop
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Stopping 5/5
+ ✔ Container image-of-the-day-image-gallery-1  Stopped                    0.1s 
+ ✔ Container image-of-the-day-iotd-1           Stopped                    0.7s 
+ ✔ Container image-of-the-day-accesslog-1      Stopped                   10.2s 
+ ✔ Container image-of-the-day-iotd-3           Stopped                    0.5s 
+ ✔ Container image-of-the-day-iotd-2           Stopped                    0.5s
+λ docker-compose start
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 5/5
+ ✔ Container image-of-the-day-iotd-3           Started                    0.5s 
+ ✔ Container image-of-the-day-accesslog-1      Started                    0.4s 
+ ✔ Container image-of-the-day-iotd-2           Started                    0.4s 
+ ✔ Container image-of-the-day-iotd-1           Started                    0.4s 
+ ✔ Container image-of-the-day-image-gallery-1  Started                    0.6s
+
+λ docker container ls
+CONTAINER ID   IMAGE                          COMMAND                  CREATED         STATUS          PORTS                    NAMES
+6cdd9595ddeb   diamol/ch04-image-of-the-day   "java -jar /app/iotd…"   2 minutes ago   Up 3 seconds    0.0.0.0:56068->80/tcp    image-of-the-day-iotd-3
+21cde3f60ad3   diamol/ch04-image-of-the-day   "java -jar /app/iotd…"   2 minutes ago   Up 3 seconds    0.0.0.0:56069->80/tcp    image-of-the-day-iotd-2
+c23c7684c52c   diamol/ch04-image-gallery      "/web/server"            7 minutes ago   Up 2 seconds    0.0.0.0:8010->80/tcp     image-of-the-day-image-gallery-1
+a437084261e1   diamol/ch04-access-log         "docker-entrypoint.s…"   7 minutes ago   Up 3 seconds    80/tcp                   image-of-the-day-accesslog-1
+03f33aa78d95   diamol/ch04-image-of-the-day   "java -jar /app/iotd…"   7 minutes ago   Up 2 seconds    0.0.0.0:56070->80/tcp    image-of-the-day-iotd-1
+10040b0d7b1e   diamol/registry                "/registry/registry …"   2 weeks ago     Up 40 minutes   0.0.0.0:5001->5000/tcp   flamboyant_black
+```
+
+The output for the first part got a bit wonky as I was changing the window size as it ran!
+```bash
+λ docker-compose down
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 4/5
+ ✔ Container image-of-the-day-image-gallery-1  Removed                                                 0.1s 
+ ⠙ Container image-of-the-day-accesslog-1      Stopping                                                4.1s 
+[+] Running 4/5age-of-the-day-iotd-1           Removed                                                 0.3s ✔ Container image-of-the-day-image-gallery-1  Remove...                                              0.1s 
+[+] Running 4/5age-of-the-day-accesslog-1      Stopping                                                ✔ Container image-of-the-day-image-gallery-1  R...                                         [+] Running 4/5ntainer image-of-the-day-accesslog-1      Stopp...                                 ✔ Container im[+] Ru[+] Ru[+][+] Running 5/5  Removed                                      0[+] [+] Running 4/5
+ ✔ Container image-of-the-day-image-gallery-1  Remove...                                              0.1s  ✔ Container image-of-the-day-accesslog-1      Removed                                               10.2s  ✔ Container image-of-the-day-iotd-1           Removed                                                0.3s  ✔ Container image-of-the-day-iotd-3           Removed                                                0.5s  ✔ Container image-of-the-day-iotd-2           Removed                                                0.4s 
+
+λ docker-compose up -d
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 3/3
+ ✔ Container image-of-the-day-accesslog-1      Started                    0.6s 
+ ✔ Container image-of-the-day-iotd-1           Started                    0.6s 
+ ✔ Container image-of-the-day-image-gallery-1  Started                    0.9s
+
+λ docker container ls
+CONTAINER ID   IMAGE                          COMMAND                  CREATED          STATUS          PORTS                    NAMES
+427a2a4c2cb3   diamol/ch04-image-gallery      "/web/server"            23 seconds ago   Up 22 seconds   0.0.0.0:8010->80/tcp     image-of-the-day-image-gallery-1
+ff966c759556   diamol/ch04-image-of-the-day   "java -jar /app/iotd…"   23 seconds ago   Up 22 seconds   0.0.0.0:56089->80/tcp    image-of-the-day-iotd-1
+0f091da6c9ed   diamol/ch04-access-log         "docker-entrypoint.s…"   23 seconds ago   Up 22 seconds   80/tcp                   image-of-the-day-accesslog-1
+10040b0d7b1e   diamol/registry                "/registry/registry …"   2 weeks ago      Up 44 minutes   0.0.0.0:5001->5000/tcp   flamboyant_black
+```
+
+## Section 7.3: How Docker plugs containers together
+Typos: use `-` instead of the `_` found in the text!
+```bash
+λ docker-compose up -d --scale iotd=3
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 5/5
+ ✔ Container image-of-the-day-accesslog-1      Running                    0.0s 
+ ✔ Container image-of-the-day-iotd-1           Running                    0.0s 
+ ✔ Container image-of-the-day-iotd-2           Started                    0.6s 
+ ✔ Container image-of-the-day-iotd-3           Started                    1.0s 
+ ✔ Container image-of-the-day-image-gallery-1  Running                    0.0s
+
+λ docker container exec -it image-of-the-day-image-gallery-1 sh
+/web # nslookup accesslog
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      accesslog
+Address 1: 172.18.0.3 image-of-the-day-accesslog-1.nat
+```
+
+```bash
+λ docker container rm -f image-of-the-day-accesslog-1
+image-of-the-day-accesslog-1
+
+λ docker-compose up -d --scale iotd=3
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 5/5
+ ✔ Container image-of-the-day-accesslog-1      Started                    0.5s 
+ ✔ Container image-of-the-day-iotd-1           Running                    0.0s 
+ ✔ Container image-of-the-day-iotd-2           Running                    0.0s 
+ ✔ Container image-of-the-day-iotd-3           Running                    0.0s 
+ ✔ Container image-of-the-day-image-gallery-1  Running                    0.0s 
+
+λ docker container exec -it image-of-the-day-image-gallery-1 sh
+
+/web # nslookup accesslog
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      accesslog
+Address 1: 172.18.0.3 image-of-the-day-accesslog-1.nat
+
+/web # nslookup iotd
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      iotd
+Address 1: 172.18.0.5 image-of-the-day-iotd-2.nat
+Address 2: 172.18.0.6 image-of-the-day-iotd-3.nat
+Address 3: 172.18.0.2 image-of-the-day-iotd-1.nat
+```
+Note from text: "Services scale with multiple containers--every container’s IP address is returned in a lookup."
+
+## Section 7.4: Application configuration in Docker Compose
+
+```bash
+λ cd ../todo-list-postgres
+
+λ docker-compose up -d
+[+] Running 10/10
+ ✔ todo-db 9 layers [⣿⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                    7.5s 
+   ✔ 89d9c30c1d48 Pull complete                                           0.5s 
+   ✔ 66ddea140797 Pull complete                                           0.4s 
+   ✔ 977cf4e465c1 Pull complete                                           0.4s 
+   ✔ d2b1be7aec3a Pull complete                                           2.0s 
+   ✔ 648405a33fb3 Pull complete                                           0.8s 
+   ✔ f0455ae649e1 Pull complete                                           1.0s 
+   ✔ 7aa0c1a0773f Pull complete                                           1.2s 
+   ✔ 0f1582464408 Pull complete                                           1.4s 
+   ✔ 131f5d9dc187 Pull complete                                           1.6s 
+[+] Running 2/3
+ ⠦ Network todo-list-postgres_app-net       Created                       2.6s 
+ ✔ Container todo-list-postgres-todo-db-1   Started                       1.8s 
+ ✔ Container todo-list-postgres-todo-web-1  Started                       1.9s
+```
+These are satisfying to watch!
+
+```bash
+λ docker-compose ps
+NAME                            IMAGE                   COMMAND                  SERVICE    CREATED          STATUS          PORTS
+todo-list-postgres-todo-db-1    diamol/postgres:11.5    "docker-entrypoint.s…"   todo-db    23 seconds ago   Up 21 seconds   0.0.0.0:5433->5432/tcp
+todo-list-postgres-todo-web-1   diamol/ch06-todo-list   "dotnet ToDoList.dll"    todo-web   22 seconds ago   Up 20 seconds   0.0.0.0:8030->80/tcp
+```
+
+The app is being served at `http://localhost:8030/`.
+
+I used `SQL ECTRON` and ran `select * from "public"."ToDos"` to see:
+```
+ToDoId,Item,DateAdded
+1,finish Chapter 7,2024-03-19 00:00:00
+2,do some CommonVoice recordings,2024-03-19 00:00:00
+```
+
+## Section 7.5: Understanding the problem Docker Compose solves
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## Section 7.6: Lab
+I reviewed the -dev and -test files & the solution makes sense to me.
 
 
