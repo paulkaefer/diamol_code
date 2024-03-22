@@ -1849,3 +1849,390 @@ ToDoId,Item,DateAdded
 I reviewed the -dev and -test files & the solution makes sense to me.
 
 
+
+# Chapter 8: Supporting reliability with health checks and dependency checks
+
+## Section 8.1: Building health checks into Docker images
+
+### start the API container
+`docker container run -d -p 8080:80 diamol/ch08-numbers-api`
+Output:
+```
+Unable to find image 'diamol/ch08-numbers-api:latest' locally
+latest: Pulling from diamol/ch08-numbers-api
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+e26e4cba9e8c: Pull complete 
+73eb2212f65e: Pull complete 
+Digest: sha256:0dcd49f3ecd0d050c0a8cc6c5f516ea37d316b620c5c6839c53b523bc2f5fb7a
+Status: Downloaded newer image for diamol/ch08-numbers-api:latest
+191d9a435574862ddd9367bb8116871a8c5017eb9fe05551b106709f5c44c721
+```
+
+### repeat this three times - it returns a random number
+```bash
+curl http://localhost:8080/rng
+curl http://localhost:8080/rng
+curl http://localhost:8080/rng
+```
+98, 92, 3
+
+### from the fourth call onwards, the API always fails
+`curl http://localhost:8080/rng`
+Yep!
+```
+{"type":"https://tools.ietf.org/html/rfc7231#section-6.6.1","title":"An error occured while processing your request.","status":500,"traceId":"|70c7d7e8-473f37f25d067f90."}
+```
+
+### check the container status
+`docker container ls`
+```
+CONTAINER ID   IMAGE                     COMMAND                  CREATED         STATUS         PORTS                    NAMES
+191d9a435574   diamol/ch08-numbers-api   "dotnet /app/Numbers…"   2 minutes ago   Up 2 minutes   0.0.0.0:8080->80/tcp     pensive_nobel
+10040b0d7b1e   diamol/registry           "/registry/registry …"   3 weeks ago     Up 8 minutes   0.0.0.0:5001->5000/tcp   flamboyant_black
+```
+
+### browse to the root path, which has folders for source code and Dockerfiles:
+`cd ./ch08/exercises/numbers`
+
+### build the image using the -f flag to specify the path to the Dockerfile:
+`docker image build -t diamol/ch08-numbers-api:v2 -f ./numbers-api/Dockerfile.v2 .`
+(it built successfully)
+
+### start the API container, v2
+`docker container run -d -p 8081:80 diamol/ch08-numbers-api:v2`
+```
+f957940114a552ce7bb1696b036b202dbcb6d8905687685b84d41570b49d96b0
+```
+
+### wait 30 seconds or so and list the containers
+`docker container ls`
+```
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                   PORTS                    NAMES
+f957940114a5   diamol/ch08-numbers-api:v2   "dotnet /app/Numbers…"   2 minutes ago    Up 2 minutes (healthy)   0.0.0.0:8081->80/tcp     laughing_robinson
+191d9a435574   diamol/ch08-numbers-api      "dotnet /app/Numbers…"   10 minutes ago   Up 10 minutes            0.0.0.0:8080->80/tcp     pensive_nobel
+10040b0d7b1e   diamol/registry              "/registry/registry …"   3 weeks ago      Up 16 minutes            0.0.0.0:5001->5000/tcp   flamboyant_black
+```
+
+### repeat this four times - it returns three random numbers and then fails
+```bash
+curl http://localhost:8081/rng
+curl http://localhost:8081/rng
+curl http://localhost:8081/rng
+curl http://localhost:8081/rng
+```
+34, 79, 98, fail:
+```
+{"type":"https://tools.ietf.org/html/rfc7231#section-6.6.1","title":"An error occured while processing your request.","status":500,"traceId":"|8b5a781c-44943a859c344761."}
+```
+
+### now the app is in a failed state - wait 90 seconds and check
+`docker container ls`
+```
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                     PORTS                    NAMES
+f957940114a5   diamol/ch08-numbers-api:v2   "dotnet /app/Numbers…"   6 minutes ago    Up 6 minutes (unhealthy)   0.0.0.0:8081->80/tcp     laughing_robinson
+191d9a435574   diamol/ch08-numbers-api      "dotnet /app/Numbers…"   14 minutes ago   Up 14 minutes              0.0.0.0:8080->80/tcp     pensive_nobel
+10040b0d7b1e   diamol/registry              "/registry/registry …"   3 weeks ago      Up 21 minutes              0.0.0.0:5001->5000/tcp   flamboyant_black
+```
+I ran `docker container inspect f957940114a5` and see:
+```
+...
+       "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 11090,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-03-22T16:47:06.095588855Z",
+            "FinishedAt": "0001-01-01T00:00:00Z",
+            "Health": {
+                "Status": "unhealthy",
+                "FailingStreak": 10,
+                "Log": [
+                    {
+                        "Start": "2024-03-22T16:52:06.799794238Z",
+                        "End": "2024-03-22T16:52:06.861884904Z",
+                        "ExitCode": 22,
+                        "Output": "  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\ncurl: (22) The requested URL returned error: 500 Internal Server Error\n"
+...
+```
+
+## Section 8.2: Starting containers with dependency checks
+
+```bash
+docker container rm -f $(docker container ls -aq)
+docker container run -d -p 8082:80 diamol/ch08-numbers-web
+docker container ls
+```
+Output:
+```
+f957940114a5
+191d9a435574
+c58fc7b4fa0b
+278c87d09440
+66131f00c8ed
+ceebc9c7c7ad
+19bdbeb82522
+427a2a4c2cb3
+ff966c759556
+c679e177e42f
+f88ebdc9f4cc
+6b9e96b64064
+c5797692f45f
+848a2ef785fe
+91f1d3245ddd
+710dc1cf9d62
+590ad9543370
+b55b44a1cecd
+2a24b373e294
+10040b0d7b1e
+b19244747d03
+7502731ea222
+8f5e1d051c08
+3cec79c380b1
+f61c113302d1
+b296e92a9fa1
+
+Unable to find image 'diamol/ch08-numbers-web:latest' locally
+latest: Pulling from diamol/ch08-numbers-web
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+383c08a2e681: Pull complete 
+699f47ec48c2: Pull complete 
+Digest: sha256:20c6eb1a6d449b2935cee7a72c1758d34013a09033894ca3377f3a7d6ac28b01
+Status: Downloaded newer image for diamol/ch08-numbers-web:latest
+93321662725e65f5fef36e4cb28e785e327c623e30c9d33e7f1724a0398348bd
+
+CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                  NAMES
+93321662725e   diamol/ch08-numbers-web   "dotnet /app/Numbers…"   13 seconds ago   Up 12 seconds   0.0.0.0:8082->80/tcp   busy_roentgen
+```
+Yes, `http://localhost:8082/` shows the message, "RNG service unavailable!"
+
+```bash
+docker container run -d -p 8084:80 diamol/ch08-numbers-web:v2
+docker container ls --all
+```
+```
+Unable to find image 'diamol/ch08-numbers-web:v2' locally
+v2: Pulling from diamol/ch08-numbers-web
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+45d207aef600: Pull complete 
+8ae9a67499f9: Pull complete 
+Digest: sha256:97818270bc82f5558acad637b7237de98868092cd540c72456bf79bf17029abd
+Status: Downloaded newer image for diamol/ch08-numbers-web:v2
+7b9d1fb9ec1b24084e5f1f185e60cd31a11bde5dab548b5b580433ab71f3c6f8
+
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                      PORTS                  NAMES
+7b9d1fb9ec1b   diamol/ch08-numbers-web:v2   "/bin/sh -c 'curl --…"   11 seconds ago   Exited (6) 10 seconds ago                          dreamy_volhard
+93321662725e   diamol/ch08-numbers-web      "dotnet /app/Numbers…"   3 minutes ago    Up 3 minutes                0.0.0.0:8082->80/tcp   busy_roentgen
+```
+
+## Section 8.3: Writing custom utilities for application check logic
+
+### clear down existing containers
+`docker container rm -f $(docker container ls -aq)`
+```
+7b9d1fb9ec1b
+93321662725e
+```
+
+### start the API container, v3
+`docker container run -d -p 8080:80 --health-interval 5s diamol/ch08-numbers-api:v3`
+```
+Unable to find image 'diamol/ch08-numbers-api:v3' locally
+v3: Pulling from diamol/ch08-numbers-api
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+c29f166a9594: Pull complete 
+5ada40c0e0f8: Pull complete 
+0509960d3a8a: Pull complete 
+Digest: sha256:8e01f3f3fa0cc3596a979930437dacb425b3047436513f2615a87063a45b7491
+Status: Downloaded newer image for diamol/ch08-numbers-api:v3
+8d62eb886e4d8b84f796ab272deaab62bf546e37dd87a1306f2b902c643448bf
+```
+
+### wait five seconds or so and list the containers
+`docker container ls`
+```
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                    PORTS                  NAMES
+8d62eb886e4d   diamol/ch08-numbers-api:v3   "dotnet Numbers.Api.…"   14 seconds ago   Up 13 seconds (healthy)   0.0.0.0:8080->80/tcp   unruffled_mendel
+```
+
+### repeat this four times - it returns three random numbers and then fails
+```bash
+curl http://localhost:8080/rng
+curl http://localhost:8080/rng
+curl http://localhost:8080/rng
+curl http://localhost:8080/rng
+```
+52, 42, 53, failed with:
+```
+{"type":"https://tools.ietf.org/html/rfc7231#section-6.6.1","title":"An error occured while processing your request.","status":500,"traceId":"|2b9f0e17-4833bf0f04c25cb2."}
+```
+
+### now the app is in a failed state - wait 15 seconds and check again
+`docker container ls`
+Output:
+```
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                      PORTS                  NAMES
+8d62eb886e4d   diamol/ch08-numbers-api:v3   "dotnet Numbers.Api.…"   52 seconds ago   Up 52 seconds (unhealthy)   0.0.0.0:8080->80/tcp   unruffled_mendel
+```
+
+```bash
+docker container run -d -p 8081:80 diamol/ch08-numbers-web:v3
+docker container ls --all
+```
+Output:
+```
+Unable to find image 'diamol/ch08-numbers-web:v3' locally
+v3: Pulling from diamol/ch08-numbers-web
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+b553df8c29da: Pull complete 
+6bb9ca1efac7: Pull complete 
+3f40d00db61e: Pull complete 
+Digest: sha256:9908c8543297e98afbb3d5b7eaa198d4e0896402a813e3aa99e2e87fab25c42d
+Status: Downloaded newer image for diamol/ch08-numbers-web:v3
+5af199f0f9bff80d222c78028ce164edb6aa6323d4e54ad4f7ad0e51dbc4aef9
+
+CONTAINER ID   IMAGE                        COMMAND                  CREATED         STATUS                     PORTS                  NAMES
+5af199f0f9bf   diamol/ch08-numbers-web:v3   "/bin/sh -c 'dotnet …"   2 seconds ago   Exited (1) 1 second ago                           stoic_swirles
+8d62eb886e4d   diamol/ch08-numbers-api:v3   "dotnet Numbers.Api.…"   2 minutes ago   Up 2 minutes (unhealthy)   0.0.0.0:8080->80/tcp   unruffled_mendel
+```
+
+## Section 8.4: Defining health checks and dependency checks in Docker Compose
+
+### browse to the Compose file
+`cd ./ch08/exercises/numbers`
+
+### clear down existing containers
+`docker container rm -f $(docker container ls -aq)`
+```
+5af199f0f9bf
+8d62eb886e4d
+```
+
+### start the app
+`docker-compose up -d`
+```
+WARN[0000] networks.app-net: external.name is deprecated. Please set name and external: true 
+[+] Running 2/2
+ ✔ Container numbers-numbers-web-1  S...                                   0.7s 
+ ✔ Container numbers-numbers-api-1  S...                                   0.6s
+```
+
+### wait five seconds or so and list the containers
+`docker container ls`
+```
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                    PORTS                  NAMES
+30d3d48bcdc0   diamol/ch08-numbers-api:v3   "dotnet Numbers.Api.…"   20 seconds ago   Up 18 seconds (healthy)   0.0.0.0:8087->80/tcp   numbers-numbers-api-1
+33b79b2dcd50   diamol/ch08-numbers-web:v3   "/bin/sh -c 'dotnet …"   20 seconds ago   Up 17 seconds (healthy)   0.0.0.0:8088->80/tcp   numbers-numbers-web-1
+```
+
+### and check the web app logs
+`docker container logs numbers-numbers-web-1`
+```
+HTTPCheck: error. Url http://numbers-api/rng, exception Connection refused
+HTTPCheck: status OK, url http://numbers-api/rng, took 145ms
+warn: Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository[60]
+      Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed.
+warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
+      No XML encryptor configured. Key {a308d015-565b-4c88-b162-ac5bdc1bc874} may be persisted to storage in unencrypted form.
+info: Microsoft.Hosting.Lifetime[0]
+      Now listening on: http://[::]:80
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /app
+```
+
+`http://localhost:8088` generated me 17, 77, then errored.
+
+## Section 8.5: Understanding how checks power self-healing apps
+
+## Section 8.6: Lab
+The Dockerfiles look straightforward.
+Running the solution:
+```bash
+docker image build -t diamol/ch08-lab:solution -f Dockerfile.solution .
+docker container run diamol/ch08-lab:solution
+```
+
+Output:
+```
+[+] Building 1.0s (9/9) FINISHED                           docker:desktop-linux
+ => [internal] load build definition from Dockerfile.solution              0.0s
+ => => transferring dockerfile: 297B                                       0.0s
+ => [internal] load metadata for docker.io/diamol/node:latest              0.8s
+ => [auth] diamol/node:pull token for registry-1.docker.io                 0.0s
+ => [internal] load .dockerignore                                          0.0s
+ => => transferring context: 2B                                            0.0s
+ => [1/3] FROM docker.io/diamol/node:latest@sha256:dfee522acebdfdd9964aa9  0.0s
+ => [internal] load build context                                          0.0s
+ => => transferring context: 1.22kB                                        0.0s
+ => CACHED [2/3] WORKDIR /app                                              0.0s
+ => [3/3] COPY src/ .                                                      0.0s
+ => exporting to image                                                     0.0s
+ => => exporting layers                                                    0.0s
+ => => writing image sha256:0ce49467317d228e3b626bde1f26575de4b821bd2346d  0.0s
+ => => naming to docker.io/diamol/ch08-lab:solution                        0.0s
+
+Memory check: OK, none allocated.
+Allocated: 512MB
+Allocated: 1024MB
+Allocated: 1536MB
+Allocated: 2048MB
+Allocated: 2560MB
+Allocated: 3072MB
+Allocated: 3584MB
+Allocated: 4096MB
+Allocated: 4608MB
+Allocated: 5120MB
+Allocated: 5632MB
+Allocated: 6144MB
+Allocated: 6656MB
+Allocated: 7168MB
+Allocated: 7680MB
+Allocated: 8192MB
+Allocated: 8704MB
+Allocated: 9216MB
+Allocated: 9728MB
+Allocated: 10240MB
+Allocated: 10752MB
+Allocated: 11264MB
+Allocated: 11776MB
+Allocated: 12288MB
+Allocated: 12800MB
+Allocated: 13312MB
+Allocated: 13824MB
+Allocated: 14336MB
+...
+Allocated: 65024MB
+Allocated: 65536MB
+Allocated: 66048MB
+```
+I killed it via the Docker GUI.
+
+

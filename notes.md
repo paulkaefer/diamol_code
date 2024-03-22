@@ -91,6 +91,9 @@ latest
 * bind mounting to have any arbitrary folder path surfaced to your container (such as a network drive)
 * From Section 6.5, "Every container has a single disk, which is a virtual disk that Docker pieces together from several sources. Docker calls this the union filesystem."
 
+### Discussion notes
+* clever the way the image layers are read-only, allowing for repeatability
+
 # Part 2: Running distributed applications in containers
 * "...use Docker and Docker Compose to define, run, and manage applications that run across multiple containers." --> CI pipeline; health checks/observability
 
@@ -105,12 +108,13 @@ latest
 * Docker Compose basically kicks things off, but that's where it ends.
 * might want to look up Docker Swarm vs. Kubernetes
 
-### Useful links
-* Author's YouTube (link from lab's README file): https://is.gd/z8qHga
+# Useful links
+* Author's YouTube (link from Chapter 6 lab's README file): https://is.gd/z8qHga
 * [Docker Compose Viz](https://github.com/pmsipilot/docker-compose-viz)
 
-### Discussion notes
-* clever the way the image layers are read-only, allowing for repeatability
+## Chapter 8: Supporting reliability with health checks and dependency checks
+* advice: logic to ensure dependencies are met. but also fail-fast (sometimes better to have an exited container than a running (but failing) container)
+* find the balance... health checks that work, but don't do too much work, as they need to run often
 
 # Once complete:
 - [ ] consider a certification
