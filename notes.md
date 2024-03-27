@@ -121,6 +121,8 @@ latest
 * custom metrics seem comparable to what we do with Datadog... but defined in JavaScript
 * using PromQL --> again, similar to Datadog's query language
 * links to [Google's Site Reliability Engineering book](http://mng.bz/EdZj)
+  * "Their focus is on latency, traffic, errors, and saturation, which they call the 'golden signals.'"
+* inspiring idea: summary dashboard(s) in Grafana & then display on a big screen in the office!
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?

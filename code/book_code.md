@@ -2316,8 +2316,9 @@ First, I ran `brew install iproute2mac`. Then `export HOST_IP=$(ip route get 1 |
 ```
 Now I see a login page @ `http://localhost:3000`!
 
+## Section 9.5: Understanding the levels of observability
 
-
+## Sectin 9.6: Lab
 
 
 
