@@ -116,5 +116,13 @@ latest
 * advice: logic to ensure dependencies are met. but also fail-fast (sometimes better to have an exited container than a running (but failing) container)
 * find the balance... health checks that work, but don't do too much work, as they need to run often
 
+## Chapter 9: Adding observability with containerized monitoring
+* exposing metrics from your app; use Prometheus to cllect them and Grafana for visualization
+* custom metrics seem comparable to what we do with Datadog... but defined in JavaScript
+* using PromQL --> again, similar to Datadog's query language
+* links to [Google's Site Reliability Engineering book](http://mng.bz/EdZj)
+
 # Once complete:
-- [ ] consider a certification
+- [ ] does LinkedIn have a Docker quiz?
+- [ ] consider pursuing a certification
+- [ ] maybe go through http://mng.bz/EdZj (see link in Chapter 9)

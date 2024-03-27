@@ -2235,4 +2235,97 @@ Allocated: 66048MB
 ```
 I killed it via the Docker GUI.
 
+# Chapter 9: Adding observability with containerized monitoring
+
+## Section 9.1: The monitoring stack for containerized applications
+Changed Docker config to:
+```json
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "metrics-addr" : "0.0.0.0:9323",
+  "experimental": true
+}
+```
+Nothing at `http://localhost:9323/metrics` (yet?)
+
+### load your machine's IP address into a variable
+```bash
+#Linux: hostIP=$(ip route get 1 | awk '{print $NF;exit}')
+λ hostIP=$(ifconfig en0 | grep -e 'inet\s' | awk '{print $2}')
+λ echo $hostIP
+10.0.0.109
+# pass your IP address as an environment variable for the container:
+λ docker container run -e DOCKER_HOST=$hostIP -d -p 9090:9090 diamol/prometheus:2.13.1
+...
+Status: Downloaded newer image for diamol/prometheus:2.13.1
+6db0239143ebafe34017f4e44d62d7a9c2f598e65f6d2b3bd9b7b9fbe4a85158
+```
+Nothing at `localhost:9090`...
+
+I changed the Docker config `"metrics-addr"` to `"127.0.0.1:9323"`; `http://localhost:9323/` took a long time to load, eventually returning `404 page not found`.
+
+Moving on...
+```bash
+docker container rm -f $(docker container ls -aq)
+```
+...took some time, returning:
+```
+request returned Bad Gateway for API route and version http://%2FUsers%2Fpaulkaefer%2F.docker%2Frun%2Fdocker.sock/v1.44/containers/6db0239143eb?force=1, check if the server supports the requested API version
+```
+
+Deleted a bunch via the Docker GUI.
+
+```bash
+docker network create nat
+# already exists
+docker-compose up -d
+```
+The page `http://localhost:8010/` loads, as does `http://localhost:8010/metrics`. Likewise @ `http://localhost:8011/actuator/prometheus`.
+
+This worked:
+```bash
+for i in {1..5}; do curl http://localhost:8010 > /dev/null; done
+      
+# now browse to http://localhost:8012/metrics
+```
+
+## Section 9.3: Running a Prometheus container to collect metrics
+```bash
+docker-compose -f docker-compose-scale.yml up -d --scale accesslog=3
+# loop to make 10 HTTP GET request
+for i in {1..15}; do curl http://localhost:8010 > /dev/null; done
+```
+Browsing to the webpage & putting `access_log_total` in worked.
+See `http://localhost:9090/graph?g0.range_input=1h&g0.expr=access_log_total&g0.tab=0`. I ran the curl command a few times, subbing-in `25` once.
+
+PromQL in Prometheus:
+`sum(access_log_total) without(hostname, instance)`
+
+## Section 9.4: Running a Grafana container to visualize metrics
+First, I ran `brew install iproute2mac`. Then `export HOST_IP=$(ip route get 1 | awk '{print $NF;exit}')` worked:
+```bash
+λ echo $HOST_IP
+10.0.0.109
+λ docker-compose -f ./docker-compose-with-grafana.yml up -d --scale accesslog=3
+λ for i in {1..20}; do curl http://localhost:8010 > /dev/null; done
+```
+Now I see a login page @ `http://localhost:3000`!
+
+
+
+
+
+
+
+
+
+
+
+
+
 
