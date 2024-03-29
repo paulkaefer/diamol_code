@@ -127,7 +127,7 @@ latest
 ## Chapter 10: Running multiple environments with Docker Compose
 * "Moving to Docker fixes that problem (drift) because every application is already packaged with its dependencies, but you still need the flexibility to support different behavior for different environments."
 * Figure 10.4: Removing duplication with override files that add environment-specific settings:
-![](./attachments/ch10/Figure_10-4.jpg)
+![](./attachments/Figure_10-4.jpg)
 * "Extension fields are custom definitions"... seems similar to terraform variables?
 
 # Once complete:
