@@ -124,6 +124,12 @@ latest
   * "Their focus is on latency, traffic, errors, and saturation, which they call the 'golden signals.'"
 * inspiring idea: summary dashboard(s) in Grafana & then display on a big screen in the office!
 
+## Chapter 10: Running multiple environments with Docker Compose
+* "Moving to Docker fixes that problem (drift) because every application is already packaged with its dependencies, but you still need the flexibility to support different behavior for different environments."
+* Figure 10.4: Removing duplication with override files that add environment-specific settings:
+![](./attachments/ch10/Figure_10-4.jpg)
+* "Extension fields are custom definitions"... seems similar to terraform variables?
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

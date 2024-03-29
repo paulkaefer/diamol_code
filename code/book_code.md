@@ -2320,13 +2320,224 @@ Now I see a login page @ `http://localhost:3000`!
 
 ## Sectin 9.6: Lab
 
+# Chapter 10: Running multiple environments with Docker Compose
+
+## Section 10.1: Deploying many applications with Docker Compose
+
+`cd ./ch10/exercises`
+
+### run the random number app from chapter 8:
+`docker-compose -f ./numbers/docker-compose.yml up -d`
+```
+...
+```
+
+### run the to-do list app from chapter 6:
+`docker-compose -f ./todo-list/docker-compose.yml up -d`
+```
+...
+```
+
+### and try another copy of the to-do list:
+`docker-compose -f ./todo-list/docker-compose.yml up -d`
+```
+[+] Running 1/0
+ ✔ Container todo-list-todo-web-1  Run...                                  0.0s
+```
+
+### Try it now
+You can start another instance of the same app by specifying a different project name:
+```bash
+docker-compose -f ./todo-list/docker-compose.yml -p todo-test up -d
+docker container ls
+docker container port todo-test-todo-web-1 80
+```
+Outputs:
+```
+[+] Running 1/2
+ ⠴ Network todo-test_app-net       Created                                 0.6s 
+ ✔ Container todo-test-todo-web-1  Sta...                                  0.5s
+
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                   PORTS                   NAMES
+22a373c35cfd   diamol/ch06-todo-list        "dotnet ToDoList.dll"    14 seconds ago   Up 12 seconds            0.0.0.0:50642->80/tcp   todo-test-todo-web-1
+d2e665420ec0   diamol/ch06-todo-list        "dotnet ToDoList.dll"    2 minutes ago    Up 2 minutes             0.0.0.0:50598->80/tcp   todo-list-todo-web-1
+2825d51cbb49   diamol/ch08-numbers-api:v3   "dotnet Numbers.Api.…"   5 minutes ago    Up 5 minutes (healthy)   80/tcp                  numbers-numbers-api-1
+
+0.0.0.0:50642
+```
+
+## Section 10.2: Using Docker Compose override files
+Use Docker Compose to merge together the files from listing 10.1 and print the output:
+```bash
+docker-compose -f ./todo-list/docker-compose.yml -f ./todo-list/docker-compose-v2.yml config
+```
+Output:
+```
+name: todo-list
+services:
+  todo-web:
+    environment:
+      Database:Provider: Sqlite
+    image: diamol/ch06-todo-list:v2
+    networks:
+      app-net: null
+    ports:
+      - mode: ingress
+        target: 80
+        protocol: tcp
+networks:
+  app-net:
+    name: todo-list_app-net
+```
+
+### remove any existing containers
+`docker container rm -f $(docker container ls -aq)`
+```
+22a373c35cfd
+d2e665420ec0
+2825d51cbb49
+402fc89abb1a
+47ed523c9a0b
+14599d336c97
+7a56c635c937
+6fc1f07a6405
+86495c4c2b3a
+f885282634ed
+2f9890fed864
+```
+
+### run the app in dev configuration:
+`docker-compose -f ./numbers/docker-compose.yml -f ./numbers/docker-compose-dev.yml -p numbers-dev up -d`
+```
+[+] Running 2/3
+ ⠧ Network numbers-dev                  Created                            0.7s 
+ ✔ Container numbers-dev-numbers-web-1  Started                            0.6s 
+ ✔ Container numbers-dev-numbers-api-1  Started                            0.6s
+```
+
+### and the test setup:
+`docker-compose -f ./numbers/docker-compose.yml -f ./numbers/docker-compose-test.yml -p numbers-test up -d`
+```
+[+] Running 2/3
+ ⠧ Network numbers-test                  Created                           0.7s 
+ ✔ Container numbers-test-numbers-web-1  Started                           0.5s 
+ ✔ Container numbers-test-numbers-api-1  Started                           0.6s 
+```
+
+### and UAT:
+`docker-compose -f ./numbers/docker-compose.yml -f ./numbers/docker-compose-uat.yml -p numbers-uat up -d`
+```
+[+] Running 2/3
+ ⠇ Network numbers-uat                  Created                            0.8s 
+ ✔ Container numbers-uat-numbers-web-1  Started                            0.8s 
+ ✔ Container numbers-uat-numbers-api-1  Started                            0.7s
+```
+
+Navigating to `localhost`... I see the app & got a random number: `Here it is: 38`.
+At `http://localhost:8080/`, I got `49`.
+At `http://localhost:8088/`, I got `62`.
+All apps look the same, but I could see changing the background color, font, or even number range to further demonstrate. Well, same app... but I could see playing around with the examples here.
 
 
+### this would work if we'd used the default docker-compose.yml file:
+`docker-compose down`
+```
+no configuration file provided: not found
+```
 
+### this would work if we'd used override files without a project name:
+`docker-compose -f ./numbers/docker-compose.yml -f ./numbers/docker-compose-test.yml down`
+```
+[+] Running 1/0
+ ! Network numbers-test  No resource found to re...                        0.0s
+```
 
+### but we specified a project name, so we need to include that too:
+`docker-compose -f ./numbers/docker-compose.yml -f ./numbers/docker-compose-test.yml -p numbers-test down`
+```
+[+] Running 3/3
+ ✔ Container numbers-test-numbers-api-1  Removed                           0.2s 
+ ✔ Container numbers-test-numbers-web-1  Removed                          10.2s 
+ ✔ Network numbers-test                  Removed                           0.1s 
+```
 
+## Section 10.3: Injecting configuration with environment variables and secrets
 
+### remove existing containers:
+`docker container rm -f $(docker container ls -aq)`
+```
+bfba9cbeece2
+3b7ca7d0cd4f
+d406716b50c8
+1de7c847dc25
+```
+ 
+### bring up the app with config overrides - for Linux containers:
+`docker-compose -f ./todo-list-configured/docker-compose.yml -f ./todo-list-configured/docker-compose-dev.yml -p todo-dev up -d`
+```
+[+] Running 1/2
+ ⠇ Network todo-dev_default       Created                                  0.8s 
+ ✔ Container todo-dev-todo-web-1  Start...                                 0.8
+ ```
 
+### send some traffic into the app:
+`curl http://localhost:8089/list`
+
+### check the logs:
+`docker container logs --tail 4 todo-dev-todo-web-1`
+```
+dbug: Microsoft.AspNetCore.Server.Kestrel[10]
+      Connection id "0HN2G1TPCA4N9" disconnecting.
+dbug: Microsoft.AspNetCore.Server.Kestrel[2]
+      Connection id "0HN2G1TPCA4N9" stopped.
+```
+...and after loading `http://localhost:8089/list`:
+```
+dbug: Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher[1]
+      Received hub invocation: InvocationMessage { InvocationId: "", Target: "EndInvokeJSFromDotNet", Arguments: [ 2, True, [2,true,null] ], StreamIds: [  ] }.
+dbug: Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost[206]
+      The JS interop call with callback id '2' succeeded.
+```
+
+```bash
+cd ./todo-list-configured
+docker-compose up -d
+```
+Output:
+```
+[+] Running 10/10
+ ✔ todo-db 9 layers [⣿⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                     8.0s 
+   ✔ 89d9c30c1d48 Pull complete                                            0.5s 
+   ✔ 66ddea140797 Pull complete                                            0.3s 
+   ✔ 977cf4e465c1 Pull complete                                            0.3s 
+   ✔ d2b1be7aec3a Pull complete                                            2.4s 
+   ✔ 648405a33fb3 Pull complete                                            0.6s 
+   ✔ f0455ae649e1 Pull complete                                            0.8s 
+   ✔ 7aa0c1a0773f Pull complete                                            1.1s 
+   ✔ 0f1582464408 Pull complete                                            1.2s 
+   ✔ 131f5d9dc187 Pull complete                                            1.5s 
+[+] Running 2/3
+ ⠧ Network todo-test               Created                                 1.8s 
+ ✔ Container todo_ch10-todo-db-1   Star...                                 1.5s 
+ ✔ Container todo_ch10-todo-web-1  Sta...                                  1.6s 
+```
+
+## Section 10.4: Reducing duplication with extension fields
+
+### browse to the image-gallery folder under ch10/exercises:
+`cd ../image-gallery`
+
+### check config for the production override:
+`docker-compose -f ./docker-compose.yml -f ./docker-compose-prod.yml config`
+```
+yaml: unmarshal errors:
+  line 9: mapping key "x-labels" already defined at line 3
+```
+
+## Section 10.5: Understanding the configuration workflow with Docker
+
+## Section 10.6: Lab
+The solution makes sense to me. Straightforward as far as configuring the YAML file(s) in the right way.
 
 
 
