@@ -138,6 +138,10 @@ latest
 - [ ] what exactly are .sock files?
 - [ ] how do we apply digital signatures? (see figure 11.14 in section 11.5)
 
+### Discussion notes
+* Yong changed `"5000:5000"` to `"5001:5000"` in the docker-compose.yml file, and got it working.
+* he did say the author specifies Jenkins version, but not all the dependencies work, so he had to make some modifications
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
