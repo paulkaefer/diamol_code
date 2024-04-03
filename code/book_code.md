@@ -2539,5 +2539,103 @@ yaml: unmarshal errors:
 ## Section 10.6: Lab
 The solution makes sense to me. Straightforward as far as configuring the YAML file(s) in the right way.
 
+# Chapter 11: Building and testing applications with Docker and Docker Compose
+
+## Section 11.1: How the CI process works with Docker
+
+## Section 11.2: Spinning up build infrastructure with Docker
+* "With a single command you can run your own setup using Gogs for source control, the open source Docker registry for distribution, and Jenkins as the automation server."
+
+### start the app with Linux containers:
+`docker-compose -f docker-compose.yml -f docker-compose-linux.yml up -d`
+...ended with:
+```
+...
+ ⠋ Container infrastructure-registry.local-1  Starting                     6.0s 
+Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:5000 -> 0.0.0.0:0: listen tcp 0.0.0.0:5000: bind: address already in use
+```
+
+### This is not needed, as I already have that line in that file:
+`echo $'\n127.0.0.1 registry.local' | sudo tee -a /etc/hosts`
+
+### check containers:
+```bash
+λ docker container ls
+CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                            NAMES
+bd4928ba8aad   0ec7fe5b2f52   "/app/gogs/docker/st…"   23 minutes ago   Up 23 minutes   22/tcp, 0.0.0.0:3000->3000/tcp   infrastructure-gogs-1
+cb28f4e74010   a753aea0e6b2   "/bin/sh -c 'java -D…"   23 minutes ago   Up 23 minutes   0.0.0.0:8080->8080/tcp           infrastructure-jenkins-1
+```
+
+Hmm, I don't see one with port ~`5000`. I kind of assumed the earlier error meant it would choose a different port! I do note that `http://localhost:5000/` returns an HTTP `403` error, "Access to localhost was denied".
+
+Hah! And `http://localhost:3000/` shows "PANIC" in red, `NewTemplateFileSystem: open /app/gogs/templates/admin/auth/edit.tmpl: input/output error`, and a stack trace.
+
+Pressed for time before our discussion, so I'll just go through the chapter. This is a neat snippet, though:
+> Every part of this pipeline ran using Docker containers, taking advantage of a neat trick: containers running in Docker can connect to the Docker API and start new containers on the same Docker Engine they’re running on. The Jenkins image has the Docker CLI installed, and the configuration in the Compose file sets up Jenkins so when it runs Docker commands they get sent to the Docker Engine on your machine. It sounds odd, but it’s really just taking advantage of the fact that the Docker CLI calls into the Docker API, so CLIs from different places can connect to the same Docker Engine. Figure 11.9 shows how that works.
+![](./attachments/Figure_11-9.jpg)
+> Figure 11.9 Running containers with a volume to bind the private channel for the Docker API
+
+## Section 11.3: Capturing build settings with Docker Compose
+Hmm:
+```bash
+λ docker-compose -f docker-compose.yml -f docker-compose-build.yml build
+[+] Building 0.0s (1/1) FINISHED                           docker:desktop-linux
+ => ERROR [numbers-api internal] load build definition from Dockerfile.v4  0.0s
+------
+ > [numbers-api internal] load build definition from Dockerfile.v4:
+------
+failed to solve: failed to read dockerfile: failed to create lease: write /var/lib/docker/buildkit/containerdmeta.db: input/output error
+```
+
+After restarting, that ran & `docker image inspect -f '{{.Config.Labels}}' diamol/ch11-numbers-api:v3-build-local` outputs:
+```
+map[build_number:0 build_tag:local com.docker.compose.project:numbers-smoketest com.docker.compose.service:numbers-api com.docker.compose.version:2.24.5 version:3.0]
+```
+
+
+```bash
+λ docker image build -f numbers-api/Dockerfile.v4 --build-arg BUILD_TAG=ch11 -t numbers-api .
+...
+ => exporting to image                                                     0.0s
+ => => exporting layers                                                    0.0s
+ => => writing image sha256:1c19d4a5ad22d8b79dea401b1f95d03c0b864f865b0a6  0.0s
+ => => naming to docker.io/library/numbers-api                             0.0s
+```
+### check the labels:
+`docker image inspect -f '{{.Config.Labels}}' numbers-api`
+```
+map[build_number:0 build_tag:ch11 version:3.0]
+```
+
+## Section 11.4: Writing CI jobs with no dependencies except Docker
+
+Yeah, `http://localhost:8080/job/diamol` can't be reached.
+Access to `http://registry.local:5000/v2/_catalog` is denied.
+
+
+## Section 11.5: Understanding containers in the CI process
+
+
+## Section 11.6: Lab
+I looked over the solution README file. While I wish the first exercises had run & I could play with this example, I get the concepts:
+* setup YAML file
+* configure Jenkins
+* create repo/push to it
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

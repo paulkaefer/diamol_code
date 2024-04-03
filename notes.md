@@ -130,6 +130,14 @@ latest
 ![](./attachments/ch10/Figure_10-4.jpg)
 * "Extension fields are custom definitions"... seems similar to terraform variables?
 
+## Chapter 11: Building and testing applications with Docker and Docker Compose
+* "In this chapter you’re going to learn how to do continuous integration (CI) with Docker."
+* "There’s a huge choice of managed services you can choose from that all support Docker--you can mix and match GitHub with Azure DevOps and Docker Hub, or you could use GitLab, which provides an all-in-one solution. Or you can run your own CI infrastructure in Docker containers."
+
+### Questions
+- [ ] what exactly are .sock files?
+- [ ] how do we apply digital signatures? (see figure 11.14 in section 11.5)
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
