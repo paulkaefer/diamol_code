@@ -2572,7 +2572,7 @@ Hah! And `http://localhost:3000/` shows "PANIC" in red, `NewTemplateFileSystem: 
 
 Pressed for time before our discussion, so I'll just go through the chapter. This is a neat snippet, though:
 > Every part of this pipeline ran using Docker containers, taking advantage of a neat trick: containers running in Docker can connect to the Docker API and start new containers on the same Docker Engine they’re running on. The Jenkins image has the Docker CLI installed, and the configuration in the Compose file sets up Jenkins so when it runs Docker commands they get sent to the Docker Engine on your machine. It sounds odd, but it’s really just taking advantage of the fact that the Docker CLI calls into the Docker API, so CLIs from different places can connect to the same Docker Engine. Figure 11.9 shows how that works.
-![](./attachments/Figure_11-9.jpg)
+![](./attachments/ch11/Figure_11-9.jpg)
 > Figure 11.9 Running containers with a volume to bind the private channel for the Docker API
 
 ## Section 11.3: Capturing build settings with Docker Compose
