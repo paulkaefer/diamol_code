@@ -2625,23 +2625,235 @@ I looked over the solution README file. While I wish the first exercises had run
 
 # Chapter 12: Understanding orchestration: Docker Swarm and Kubernetes
 
+## Section 12.2: Setting up a Docker Swarm cluster
+
+### Switch to swarm mode:
+```bash
+docker swarm init
+```
+Output:
+```
+Swarm initialized: current node (abcdef1234567890) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-... 192.168.65.3:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+```
+
+### print the command to join a new worker node
+`docker swarm join-token worker`
+```
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-4... 192.168.65.3:2377
+```
+
+### print the command to join a new manager node
+`docker swarm join-token manager`
+```
+To add a manager to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-4... 192.168.65.3:2377
+```
+
+### list all the nodes in the swarm
+`docker node ls`
+```
+ID                            HOSTNAME         STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+2287fnuweiq8sqaacaqjsap7t *   docker-desktop   Ready     Active         Leader           25.0.3
+```
+
+## Section 12.3: Running applications as Docker Swarm services
+```bash
+docker service create --name timecheck --replicas 1 diamol/ch12-timecheck:1.0
+docker service ls
+```
+
+Output:
+```
+qzekchik8nw8xlnp5g53hx09k
+overall progress: 1 out of 1 tasks 
+1/1: running   
+verify: Service converged
+
+ID             NAME        MODE         REPLICAS   IMAGE                       PORTS
+qzekchik8nw8   timecheck   replicated   1/1        diamol/ch12-timecheck:1.0   
+```
+
+### list the replicas for the service:
+`docker service ps timecheck`
+```
+ID             NAME          IMAGE                       NODE             DESIRED STATE   CURRENT STATE           ERROR     PORTS
+t8kic3qpufnj   timecheck.1   diamol/ch12-timecheck:1.0   docker-desktop   Running         Running 2 minutes ago
+```
+
+### check the containers on the machine:
+`docker container ls`
+```
+CONTAINER ID   IMAGE                       COMMAND                  CREATED         STATUS         PORTS     NAMES
+3dce3413440c   diamol/ch12-timecheck:1.0   "dotnet TimeCheck.dll"   2 minutes ago   Up 2 minutes             timecheck.1.t8kic3qpufnjf9cz7zps5kv0y
+```
+
+### remove the most recent container (which is the service replica):
+`docker container rm -f $(docker container ls --last 1 -q)`
+Hmm, the inner bit didn't return anything. I just did the `ls` and got `3dce3413440c`:
+`docker container rm -f 3dce3413440c`
+
+### check the replicas again:
+`docker service ps timecheck`
+Output:
+```
+ID             NAME              IMAGE                       NODE             DESIRED STATE   CURRENT STATE          ERROR                         PORTS
+ms1agmzdtk82   timecheck.1       diamol/ch12-timecheck:1.0   docker-desktop   Ready           Ready 3 seconds ago                                  
+t8kic3qpufnj    \_ timecheck.1   diamol/ch12-timecheck:1.0   docker-desktop   Shutdown        Failed 4 seconds ago   "task: non-zero exit (137)"
+```
 
 
+### print the service logs for the last 10 seconds:
+`docker service logs --since 10s timecheck`
+```
+timecheck.1.ms1agmzdtk82@docker-desktop    | App version: 1.0; time check: 16:37.40
+timecheck.1.ms1agmzdtk82@docker-desktop    | App version: 1.0; time check: 16:37.45
+```
+
+### get the service details, showing just the image:
+`docker service inspect timecheck -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}'`
+```
+diamol/ch12-timecheck:1.0@sha256:9d3010a572344c988da8e28444ed345c63662a5c211886e670a8ef3c84689b4e
+```
 
 
+### update the service to use a new application image:
+`docker service update --image diamol/ch12-timecheck:2.0 timecheck`
+```
+timecheck
+overall progress: 1 out of 1 tasks 
+1/1: running   
+verify: Service converged
+```
 
+### list the service replicas:
+`docker service ps timecheck`
+```
+ID             NAME              IMAGE                       NODE             DESIRED STATE   CURRENT STATE             ERROR                         PORTS
+ng1f5ekwjju5   timecheck.1       diamol/ch12-timecheck:2.0   docker-desktop   Running         Running 15 seconds ago                                  
+ms1agmzdtk82    \_ timecheck.1   diamol/ch12-timecheck:1.0   docker-desktop   Shutdown        Shutdown 16 seconds ago                                 
+t8kic3qpufnj    \_ timecheck.1   diamol/ch12-timecheck:1.0   docker-desktop   Shutdown        Failed 8 minutes ago      "task: non-zero exit (137)"  
+```
 
+### and check the logs:
+`docker service logs --since 20s timecheck`
+```
+timecheck.1.ng1f5ekwjju5@docker-desktop    | App version: 2.0; time check: 16:39.37
+timecheck.1.ng1f5ekwjju5@docker-desktop    | App version: 2.0; time check: 16:39.42
+timecheck.1.ng1f5ekwjju5@docker-desktop    | App version: 2.0; time check: 16:39.47
+timecheck.1.ng1f5ekwjju5@docker-desktop    | App version: 2.0; time check: 16:39.52
+```
 
+### rollback the previous update:
+`docker service update --rollback timecheck`
+```
+rollback: manually requested rollback 
+overall progress: rolling back update: 1 out of 1 tasks 
+1/1: running   
+verify: Service converged 
+```
 
+### list all the service replicas:
+`docker service ps timecheck`
+```
+ID             NAME              IMAGE                       NODE             DESIRED STATE   CURRENT STATE             ERROR                         PORTS
+ugt3zf14niwb   timecheck.1       diamol/ch12-timecheck:1.0   docker-desktop   Running         Running 29 seconds ago                                  
+ng1f5ekwjju5    \_ timecheck.1   diamol/ch12-timecheck:2.0   docker-desktop   Shutdown        Shutdown 30 seconds ago                                 
+ms1agmzdtk82    \_ timecheck.1   diamol/ch12-timecheck:1.0   docker-desktop   Shutdown        Shutdown 3 minutes ago                                  
+t8kic3qpufnj    \_ timecheck.1   diamol/ch12-timecheck:1.0   docker-desktop   Shutdown        Failed 12 minutes ago     "task: non-zero exit (137)"  
+```
 
+### print the logs from all replicas for the last 25 seconds:
+`docker service logs --since 25s timecheck`
+```
+timecheck.1.ugt3zf14niwb@docker-desktop    | App version: 1.0; time check: 16:43.11
+timecheck.1.ugt3zf14niwb@docker-desktop    | App version: 1.0; time check: 16:43.16
+timecheck.1.ugt3zf14niwb@docker-desktop    | App version: 1.0; time check: 16:43.21
+timecheck.1.ugt3zf14niwb@docker-desktop    | App version: 1.0; time check: 16:43.26
+timecheck.1.ugt3zf14niwb@docker-desktop    | App version: 1.0; time check: 16:43.31
+```
 
+## Section 12.4: Managing network traffic in the cluster
 
+### remove the original app:
+`docker service rm timecheck`
+```
+timecheck
+```
 
+### create an overlay network for the new app:
+`docker network create --driver overlay iotd-net`
+```
+limcgl8if9dk7wul9wb4jfqj6
+```
 
+### create the API service, attaching it to the network:
+`docker service create --detach --replicas 3 --network iotd-net --name iotd diamol/ch09-image-of-the-day`
+```
+bnsjns99908j85ijhv6fhghuk
+```
 
+### and the log API, attached to the same network:
+`docker service create --detach --replicas 2 --network iotd-net --name accesslog diamol/ch09-access-log`
+```
+8r3e363hmldzjmebb7gezunl5
+```
 
+### check the services:
+`docker service ls`
+```
+ID             NAME        MODE         REPLICAS   IMAGE                                 PORTS
+8r3e363hmldz   accesslog   replicated   2/2        diamol/ch09-access-log:latest         
+bnsjns99908j   iotd        replicated   3/3        diamol/ch09-image-of-the-day:latest 
+```
 
+### run a terminal session
+`docker container exec -it $(docker container ls --last 1 -q) sh`
+No output, so I ran `docker container ls` and picked one of the `accesslog` replicas, `902f86fed874`:
+`docker container exec -it 902f86fed874 sh`
 
+### run DNS lookups:
+`nslookup iotd`
+`nslookup accesslog`
+Output:
+```
+/app # nslookup iotd
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      iotd
+Address 1: 10.0.1.2
+/app # nslookup accesslog
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      accesslog
+Address 1: 10.0.1.7
+/app # 
+```
+
+### create the web front end for the app:
+`docker service create --detach --name image-gallery --network iotd-net --publish 8010:80 --replicas 2 diamol/ch09-image-gallery`
+```
+7784ohtduphath6thcl5v1ece
+```
+
+### list all services:
+`docker service ls`
+```
+ID             NAME            MODE         REPLICAS   IMAGE                                 PORTS
+8r3e363hmldz   accesslog       replicated   2/2        diamol/ch09-access-log:latest         
+7784ohtdupha   image-gallery   replicated   2/2        diamol/ch09-image-gallery:latest      *:8010->80/tcp
+bnsjns99908j   iotd            replicated   3/3        diamol/ch09-image-of-the-day:latest   
+```
+
+## Section 12.5: Understanding the choice between Docker Swarm and Kubernetes
 
 
 

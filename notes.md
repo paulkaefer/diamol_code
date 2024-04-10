@@ -146,6 +146,11 @@ latest
 * Docker Swarm - "a simple and powerful orchestrator built into Docker"
 
 ## Chapter 12: Understanding orchestration: Docker Swarm and Kubernetes
+> "Services are first-class objects in Docker Swarm"... what does `first-class` mean in this context?
+
+> I know it’s not good, but at least we got 12 chapters in before we hit the “this sucks on Windows” moment, and I don’t think there are any more coming.
+
+* Good comparison of Docker Swarm vs. Kubernetes.
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
