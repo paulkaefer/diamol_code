@@ -142,6 +142,11 @@ latest
 * Yong changed `"5000:5000"` to `"5001:5000"` in the docker-compose.yml file, and got it working.
 * he did say the author specifies Jenkins version, but not all the dependencies work, so he had to make some modifications
 
+# Part 3: Running at scale with a container orchestrator
+* Docker Swarm - "a simple and powerful orchestrator built into Docker"
+
+## Chapter 12: Understanding orchestration: Docker Swarm and Kubernetes
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

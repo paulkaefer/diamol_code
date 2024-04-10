@@ -2623,6 +2623,24 @@ I looked over the solution README file. While I wish the first exercises had run
 * create repo/push to it
 
 
+# Chapter 12: Understanding orchestration: Docker Swarm and Kubernetes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
