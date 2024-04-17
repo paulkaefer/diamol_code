@@ -2855,6 +2855,85 @@ bnsjns99908j   iotd            replicated   3/3        diamol/ch09-image-of-the-
 
 ## Section 12.5: Understanding the choice between Docker Swarm and Kubernetes
 
+# Chapter 13: Deploying distributed applications as stacks in Docker Swarm
+
+## Section 13.1: Using Docker Compose for production deployments
+
+`cd ch13/exercises`
+
+### deploy the stack from the Compose file:
+`docker stack deploy -c ./todo-list/v1.yml todo`
+```
+Creating network todo_default
+Creating service todo_todo-web
+```
+
+### list all the stacks and see the new one:
+`docker stack ls`
+```
+NAME      SERVICES
+todo      1
+```
+
+### list all services and see the service created by the deployment:
+`docker service ls`
+```
+ID             NAME            MODE         REPLICAS   IMAGE                                 PORTS
+8r3e363hmldz   accesslog       replicated   2/2        diamol/ch09-access-log:latest         
+7784ohtdupha   image-gallery   replicated   2/2        diamol/ch09-image-gallery:latest      *:8010->80/tcp
+bnsjns99908j   iotd            replicated   3/3        diamol/ch09-image-of-the-day:latest   
+atnjf4v8qbr5   todo_todo-web   replicated   1/1        diamol/ch06-todo-list:latest          *:8080->80/tcp
+```
+Works @ `http://localhost:8080/`.
+
+### deploy an updated Compose file for the stack
+`docker stack deploy -c ./todo-list/v2.yml todo`
+```
+Updating service todo_todo-web (id: atnjf4v8qbr5g6nak0sk13xuc)
+```
+
+### check all the replicas for the web service:
+`docker service ps todo_todo-web`
+```
+ID             NAME                  IMAGE                          NODE             DESIRED STATE   CURRENT STATE            ERROR     PORTS
+ym3o9jnl9uo5   todo_todo-web.1       diamol/ch06-todo-list:latest   docker-desktop   Running         Running 7 seconds ago              
+hb8g183ve3as    \_ todo_todo-web.1   diamol/ch06-todo-list:latest   docker-desktop   Shutdown        Shutdown 8 seconds ago             
+151ioqzs4lnx   todo_todo-web.2       diamol/ch06-todo-list:latest   docker-desktop   Running         Running 10 seconds ago 
+```
+
+### list all the services in the stack:
+`docker stack services todo`
+```
+ID             NAME            MODE         REPLICAS   IMAGE                          PORTS
+atnjf4v8qbr5   todo_todo-web   replicated   2/2        diamol/ch06-todo-list:latest   *:8080->80/tcp
+```
+
+### list all replicas for all services in the stack:
+`docker stack ps todo`
+```
+ID             NAME                  IMAGE                          NODE             DESIRED STATE   CURRENT STATE             ERROR     PORTS
+ym3o9jnl9uo5   todo_todo-web.1       diamol/ch06-todo-list:latest   docker-desktop   Running         Running 16 minutes ago              
+hb8g183ve3as    \_ todo_todo-web.1   diamol/ch06-todo-list:latest   docker-desktop   Shutdown        Shutdown 16 minutes ago             
+151ioqzs4lnx   todo_todo-web.2       diamol/ch06-todo-list:latest   docker-desktop   Running         Running 16 minutes ago     ID             NAME                  IMAGE                          NODE             DESIRED STATE   CURRENT STATE             ERROR     PORTS
+ym3o9jnl9uo5   todo_todo-web.1       diamol/ch06-todo-list:latest   docker-desktop   Running         Running 16 minutes ago              
+hb8g183ve3as    \_ todo_todo-web.1   diamol/ch06-todo-list:latest   docker-desktop   Shutdown        Shutdown 16 minutes ago             
+151ioqzs4lnx   todo_todo-web.2       diamol/ch06-todo-list:latest   docker-desktop   Running         Running 16 minutes ago     
+```
+
+### remove the stack:
+`docker stack rm todo`
+```
+Removing service todo_todo-web
+Removing network todo_default
+```
+
+
+
+
+
+
+
+
 
 
 
