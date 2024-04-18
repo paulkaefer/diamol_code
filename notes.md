@@ -156,6 +156,10 @@ latest
 * the reality is you [should] interact with Docker Swarm via YAML, not individual/manual commands
 * "Docker containers can access all the host machine’s CPU and memory if you don’t specify a limit"
 * The juggling octopi are cute in [Figure 13.4](./attachments/Figure_13-4.jpg)!
+* config objects are not meant for sensitive data
+* secrets are encrupted for their lifetime in the cluster
+* n.b., neither config objects nor secrets may be updated --> I do see a positive; having a commit and minor version increment for regular password updates.
+  * ahh, but Kubernetes does let you update both; this is just a Docker Swarm "limitation"/feature
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?

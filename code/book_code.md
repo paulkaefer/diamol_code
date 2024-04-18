@@ -2927,13 +2927,54 @@ Removing service todo_todo-web
 Removing network todo_default
 ```
 
+## Section 13.2: Managing app configuration with config objects
+I read this & looked at some of the .yml files.
 
+## Section 13.3: Managing confidential settings with secrets
+`docker secret create todo-list-secret ./todo-list/secrets/secrets.json`
+```
+6wgi20wnine9evr9z36x57nw0
+```
+`docker secret inspect --pretty todo-list-secret`
+```
+ID:              6wgi20wnine9evr9z36x57nw0
+Name:              todo-list-secret
+Driver:            
+Created at:        2024-04-18 13:48:35.924275645 +0000 utc
+Updated at:        2024-04-18 13:48:35.924275645 +0000 utc
+```
 
+## Section 13.4: Storing data with volumes in the Swarm
+* See Chapter 6 for our initial coverage of Docker volumes.
+`docker node update --label-add storage=raid $(docker node ls -q)`
+```
+2287fnuweiq8sqaacaqjsap7t
+```
 
+`docker volume ls -q`
+```
+3f39ef0ebf8e7035b09292098c2d13425770cf4f917b2138cafde37842834df0
+36ccde49f1d6bd6cc5aa00634e12ea2d32c8b6435fdbb2b55f6d556721712369
+1572a130f78c550813b8f46027ab1c27a689dba2b3db2a38a2999694ad61b50d
+3582a73359aeb009f9d9b57729719a3b9034929643b99cfa3a48398701889e77
+64659bef4e8efc47254205ba2b209b1a02963a77b30db0d46727ca090481592a
+106928a70685242c2b41fbc2891abf14514ec9f141bcf5f10cc95528356dc04b
+9346650baa1ba1347d8bc3858c5816d00b3fe8beced648fd3611f07421c5613d
+ad2ed4c4d146db57c39e94ae19fd42e9f48a06390d1980486a8617d90b6e423b
+b310af7927db0e76491e39f1965ba43b36c93a8afce9f192a4af22e11b8b1f30
+be21e94af0dcb534ee6ecbb65819e7a0561c32073007311cffd4547869afb66b
+cf57505862cdb390d6a0370c81601e36c354c3f8bf392b872e5a7731f51dd2b8
+d263fad225b0070e808d28b5312965b664e90456bc3ef015d8a998252e47b989
+de3f4a7cc9cc55add37e853bfe9917074e95ac0e9874179a6fd30e30b4f2ec63
+e4c16816cd868016f0e0073c3becfc9f9497b0ef9c156a83d75671c566093790
+todo-list
+```
 
+Pressed for time, but it looks neat & straightforward to run the exercises with v5 and v6 and see the data persist.
 
+## Section 13.5: Understanding how the cluster manages stacks
 
-
+## Section 13.6: Lab
 
 
 
