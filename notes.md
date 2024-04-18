@@ -155,6 +155,7 @@ latest
 ## Chapter 13: Deploying distributed applications as stacks in Docker Swarm
 * the reality is you [should] interact with Docker Swarm via YAML, not individual/manual commands
 * "Docker containers can access all the host machine’s CPU and memory if you don’t specify a limit"
+* The juggling octopi are cute in [Figure 13.4](./attachments/Figure_13-4.jpg)!
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
