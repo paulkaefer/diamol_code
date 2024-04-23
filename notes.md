@@ -161,6 +161,15 @@ latest
 * n.b., neither config objects nor secrets may be updated --> I do see a positive; having a commit and minor version increment for regular password updates.
   * ahh, but Kubernetes does let you update both; this is just a Docker Swarm "limitation"/feature
 
+
+## Chapter 14: Automating releases with upgrades and rollbacks
+* should have zero downtime for upgrades & ideally monthly alongside OS updates
+* `mode: global` to ensure one replica on each node of the Swarm
+* on rollbacks:
+> There is no `docker stack rollback` command; only individual services can be rolled back to their previous state.
+* https://labs.play-with-docker.com/
+
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

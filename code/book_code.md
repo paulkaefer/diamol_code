@@ -2977,10 +2977,53 @@ Pressed for time, but it looks neat & straightforward to run the exercises with 
 ## Section 13.6: Lab
 
 
+# Chapter 14
+Read up until the https://labs.play-with-docker.com/ exercise(s):
 
+After following the steps in the Try it Now box:
+```bash
+$ docker node ls
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+tek76y8qqtc4z30e0vr20jyeg *   node1      Ready     Active         Leader           24.0.7
+zwuzncck6pxs49u26eicga1ir     node2      Ready     Active         Reachable        24.0.7
+sctfip8bgnip3hog6ebh2fc43     node3      Ready     Active         Reachable        24.0.7
+4s0oc22dtc4tykt45oia4ojoo     node4      Ready     Active                          24.0.7
+zo1bto7b58b2kj1gq7r2byaov     node4      Down      Active                          24.0.7
+x9ya23nhumfbrnk86cfbguv2o     node5      Ready     Active                          24.0.7
+```
 
+Out of curiosity:
+```
+$ compgen -c | wc -l
+1072
+```
 
+After the drains:
+```
+$ docker node ls
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+tek76y8qqtc4z30e0vr20jyeg *   node1      Ready     Active         Leader           24.0.7
+zwuzncck6pxs49u26eicga1ir     node2      Ready     Active         Reachable        24.0.7
+sctfip8bgnip3hog6ebh2fc43     node3      Ready     Drain          Reachable        24.0.7
+4s0oc22dtc4tykt45oia4ojoo     node4      Ready     Active                          24.0.7
+zo1bto7b58b2kj1gq7r2byaov     node4      Down      Active                          24.0.7
+x9ya23nhumfbrnk86cfbguv2o     node5      Ready     Drain                           24.0.7
+```
 
+After the next box:
+```
+$ docker node ls
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+tek76y8qqtc4z30e0vr20jyeg     node1      Unknown   Active         Unreachable      24.0.7
+zwuzncck6pxs49u26eicga1ir *   node2      Ready     Active         Reachable        24.0.7
+sctfip8bgnip3hog6ebh2fc43     node3      Ready     Drain          Leader           24.0.7
+4s0oc22dtc4tykt45oia4ojoo     node4      Ready     Active                          24.0.7
+zo1bto7b58b2kj1gq7r2byaov     node4      Down      Active                          24.0.7
+x9ya23nhumfbrnk86cfbguv2o     node5      Ready     Active                          24.0.7
+```
+
+## Chapter 14 lab
+I looked over the files... where is the health check specified in the solution?
 
 
 
