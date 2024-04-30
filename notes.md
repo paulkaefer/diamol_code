@@ -169,6 +169,10 @@ latest
 > There is no `docker stack rollback` command; only individual services can be rolled back to their previous state.
 * https://labs.play-with-docker.com/
 
+## Chapter 15: Configuring Docker for secure remote access and CI/CD
+* I went through pretty quickly over lunch & like the concepts.
+* PWD is a neat tool.
+
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
