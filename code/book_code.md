@@ -3051,6 +3051,27 @@ Local Volumes   0         0         0B        0B
 Build Cache     13        0         0B        0B
 ```
 
+Ran on my work computer; before:
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          19        11        7.363GB   4.374GB (59%)
+Containers      36        8         176.3MB   176.3MB (100%)
+Local Volumes   2         2         0B        0B
+Build Cache     217       0         1.567GB   1.567GB
+```
+...after (`Total reclaimed space: 1.825GB`):
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          18        11        7.093GB   4.103GB (57%)
+Containers      28        25        176.3MB   35.29MB (20%)
+Local Volumes   4         2         0B        0B
+Build Cache     38        0         0B        0B
+```
+
+...and my personal Mac; before:
+
+...after:
+
 Try it now:
 ```bash
 cd ch17/exercises/build-context
