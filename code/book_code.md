@@ -3025,6 +3025,208 @@ x9ya23nhumfbrnk86cfbguv2o     node5      Ready     Active                       
 ## Chapter 14 lab
 I looked over the files... where is the health check specified in the solution?
 
+# Chapter 17: Optimizing your Docker images for size, speed, and security
+
+## Section 17.1: How you optimize Docker images
+Running on a personal laptop that I haven't used for much of the work in this book:
+`docker system df`:
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          3         3         139.6MB   7.153MB (5%)
+Containers      3         1         13.85MB   0B (0%)
+Local Volumes   0         0         0B        0B
+Build Cache     31        0         43.54MB   43.54MB
+```
+`docker system prune`:
+```
+...
+Total reclaimed space: 43.54MB
+```
+And again, `docker system df`:
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          3         1         139.6MB   119.3MB (85%)
+Containers      1         1         13.85MB   0B (0%)
+Local Volumes   0         0         0B        0B
+Build Cache     13        0         0B        0B
+```
+
+Try it now:
+```bash
+cd ch17/exercises/build-context
+docker image build -t diamol/ch17-build-context:v1 .
+docker image build -t diamol/ch17-build-context:v2 -f ./Dockerfile.v2 .
+docker image ls -f reference= diamol/ch17*
+```
+
+Final command output:
+```
+REPOSITORY                  TAG       IMAGE ID       CREATED         SIZE
+diamol/ch17-build-context   v2        90085acedd62   4 seconds ago   9.25MB
+diamol/ch17-build-context   v1        041d0fc17d34   8 seconds ago   9.25MB
+```
+
+Commands alongside output:
+```
+# run a container from the finished image:
+> docker container run diamol/ch17-build-context:v2
+
+app-
+init.txt
+docs-
+ls: docs: No such file or directory
+
+# check the image history to find the previous layer ID:
+> docker history diamol/ch17-build-context:v2
+
+IMAGE          CREATED         CREATED BY                                      SIZE      COMMENT
+90085acedd62   2 minutes ago   RUN /bin/sh -c rm -rf docs # buildkit           0B        buildkit.dockerfile.v0
+<missing>      2 minutes ago   COPY . . # buildkit                             2.1MB     buildkit.dockerfile.v0
+<missing>      2 minutes ago   CMD ["/bin/sh" "-c" "echo app- && ls app && …   0B        buildkit.dockerfile.v0
+<missing>      3 years ago     /bin/sh -c apk add --no-cache curl              1.61MB
+<missing>      4 years ago     /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B
+<missing>      4 years ago     /bin/sh -c #(nop) ADD file:a0afd0b0db7f9ee94…   5.55MB
+
+# run a container from that previous layer:
+> docker container run 90085acedd62
+
+app-
+init.txt
+docs-
+ls: docs: No such file or directory
+```
+Hmm, so that's because I used the wrong image hash... why are there several `<missing>`? Anyway, with a `docker image ls`, I found `041d0fc17d34`:
+```
+>docker container run 041d0fc17d34
+app-
+init.txt
+docs-
+README.md
+whale.jpg
+```
+
+Next "Try it now", with instructions alongside truncated output:
+```bash
+# build the optimized image; this adds unused files to the context:
+> docker image build -t diamol/ch17-build-context:v3 -f ./Dockerfile.v3 .
+
+2024/05/28 12:25:02 http2: server: error reading preface from client //./pipe/docker_engine: file has already been closed
+[+] Building 0.7s (7/7) FINISHED                                                                         docker:default
+...
+ => => writing image sha256:3e5b19ab4a182cdf158a01b9001717bab8088ecbde3616f03c9d64ef0e058579                       0.0s
+ => => naming to docker.io/diamol/ch17-build-context:v3                                                            0.0s
+
+# now rename the already prepared ignore file and check the contents:
+> mv rename.dockerignore .dockerignore
+> cat .dockerignore
+docs/
+Dockerfile*
+
+# run the same build command again:
+> docker image build -t diamol/ch17-build-context:v3 -f ./Dockerfile.v3 .
+...
+ => => transferring context: 56B
+...
+```
+
+## Section 17.2: Choosing the right base images
+
+```
+> cd ch17/exercises/truth-app
+# well, cd ../ and then cd truth-app worked on Windows...
+
+# build the image - the base image uses the :11-jdk tag:
+> docker image build -t diamol/ch17-truth-app .
+
+# run the app and try it out:
+> docker container run -d -p 8010:80 --name truth diamol/ch17-truth-app
+a32e86eb0e7ed49b4a7ee4d65674bde28c8537e226767ac397389a38f3b6511b
+> curl http://localhost:8010/truth
+true
+```
+And `localhost:8010` in browser returns, "Nothing to see here, try /truth".
+
+```
+# connect to the API container - for Linux containers:
+> docker container exec -it truth sh
+# worked
+
+# OR for Windows containers:
+> docker container exec -it truth cmd
+
+# inside the container compile and run the test Java file:
+> javac FileUpdateTest.java
+> java FileUpdateTest
+> exit
+
+# back on your machine, try the API again:
+> curl http://localhost:8010/truth
+false
+```
+Out of curiosity, I sh'd back in:
+```
+# cat FileUpdateTest.java
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class FileUpdateTest {
+
+    public static void main(String[] args) {
+        String path = "truth.txt";
+        String contents = "false";
+        try {
+            Files.writeString(Paths.get(path), contents);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}#
+```
+
+Working with Anchore:
+```bash
+> cd ch17/exercises/anchore
+
+# start all the Anchore components:
+> docker-compose up -d
+
+# wait for Anchore to download its database - this can take 15 minutes,
+
+# so you might want to open a new terminal window for this command:
+> docker exec anchore_engine-api_1 anchore-cli system wait
+Error response from daemon: No such container: anchore_engine-api_1
+
+# now copy the Dockerfile for my Java golden image into the container:
+> docker container cp "$(pwd)/../../../images/openjdk/Dockerfile" anchore_engine-api_1:/Dockerfile
+
+# and add the image and the Dockerfile for Anchore to analyze:
+> docker container exec anchore_engine-api_1 anchore-cli image add diamol/openjdk --dockerfile /Dockerfile
+
+# wait for the analysis to complete:
+> docker container exec anchore_engine-api_1 anchore-cli image wait diamol/openjdk
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

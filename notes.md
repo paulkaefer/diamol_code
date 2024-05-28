@@ -173,6 +173,27 @@ latest
 * I went through pretty quickly over lunch & like the concepts.
 * PWD is a neat tool.
 
+## Chapter 16
+I read through before we met, but did not run any of the code. Conceptually straightforward; you *might* need to package your image for different architectures. That said, Buildx is a very useful tool that seems to be in wide use these days.
+
+# Part 4: Getting your containers ready for production
+
+## Chapter 17: Optimizing your Docker images for size, speed, and security
+Optimize because...
+> ...you do not want to be paged at 2 a.m. when your servers have run out of disk space.
+
+>  It’s easy for your disk to get swallowed up with lots of old image layers, especially on development or test machines that are regularly updating.
+Truth! I cleared some on my work machine recently & freed-up a LOT of space.
+
+> Each instruction in a Dockerfile produces an image layer, and layers are merged together to form the whole image.
+
+* Be careful to select a base image that suits your needs... the example shows `nanoserver` versions of OpenJDK images that are MUCH smaller, even for Windows.
+
+> As a good rule, use Alpine or Debian Slim images as the base OS for Linux containers, and Nano Server for Windows containers (the alternative is Windows Server Core, which is pretty much the full Windows Server OS--that’s where the gigabytes of disk go).
+
+...but that "not every app will work with the smaller variants, but it’s easy to switch images in your `FROM` lines and test it out."
+
+Like the author says, the truth-app example is contrived... I found [this](https://redfoxsec.com/blog/introduction-to-docker-container-breakouts/) and [this](https://www.aquasec.com/cloud-native-academy/container-security/container-escape/) talking about container breakout/escape.
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
