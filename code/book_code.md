@@ -3196,6 +3196,7 @@ Working with Anchore:
 
 # so you might want to open a new terminal window for this command:
 > docker exec anchore-engine-api-1 anchore-cli system wait
+# this is still running (maybe 5-6 minutes as of 12:51 PM)
 
 # now copy the Dockerfile for my Java golden image into the container:
 > docker container cp "$(pwd)/../../../images/openjdk/Dockerfile" anchore-engine-api-1:/Dockerfile
