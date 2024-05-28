@@ -3069,8 +3069,21 @@ Build Cache     38        0         0B        0B
 ```
 
 ...and my personal Mac; before:
-
-...after:
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          34        17        3.28GB    1.606GB (48%)
+Containers      40        14        65.13MB   65.03MB (99%)
+Local Volumes   15        5         184.3MB   62.87MB (34%)
+Build Cache     110       0         259.4MB   259.4MB
+```
+...after (`Total reclaimed space: 344.7MB`):
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          31        8         3.26GB    2.32GB (71%)
+Containers      15        12        98.3kB    0B (0%)
+Local Volumes   15        0         184.3MB   184.3MB (100%)
+Build Cache     15        0         0B        0B
+```
 
 Try it now:
 ```bash
