@@ -3195,17 +3195,16 @@ Working with Anchore:
 # wait for Anchore to download its database - this can take 15 minutes,
 
 # so you might want to open a new terminal window for this command:
-> docker exec anchore_engine-api_1 anchore-cli system wait
-Error response from daemon: No such container: anchore_engine-api_1
+> docker exec anchore-engine-api-1 anchore-cli system wait
 
 # now copy the Dockerfile for my Java golden image into the container:
-> docker container cp "$(pwd)/../../../images/openjdk/Dockerfile" anchore_engine-api_1:/Dockerfile
+> docker container cp "$(pwd)/../../../images/openjdk/Dockerfile" anchore-engine-api-1:/Dockerfile
 
 # and add the image and the Dockerfile for Anchore to analyze:
-> docker container exec anchore_engine-api_1 anchore-cli image add diamol/openjdk --dockerfile /Dockerfile
+> docker container exec anchore-engine-api-1 anchore-cli image add diamol/openjdk --dockerfile /Dockerfile
 
 # wait for the analysis to complete:
-> docker container exec anchore_engine-api_1 anchore-cli image wait diamol/openjdk
+> docker container exec anchore-engine-api-1 anchore-cli image wait diamol/openjdk
 ```
 
 
