@@ -3242,13 +3242,59 @@ Feed sync: Checking sync completion for feed set (vulnerabilities)...
 
 # now copy the Dockerfile for my Java golden image into the container:
 > docker container cp "$(pwd)/../../../images/openjdk/Dockerfile" anchore-engine-api-1:/Dockerfile
+CreateFile C:\Users\paulk\GitHub\diamol\ch17\images: The system cannot find the file specified.
+# copied to the local folder then:
+>docker container cp Dockerfile anchore-engine-api-1:/Dockerfile
+Successfully copied 2.05kB to anchore-engine-api-1:/Dockerfile
 
 # and add the image and the Dockerfile for Anchore to analyze:
 > docker container exec anchore-engine-api-1 anchore-cli image add diamol/openjdk --dockerfile /Dockerfile
+Image Digest: sha256:6b39ed34b004ea3a9cc26985129bc76cea4006d1af45e15fb33b7353488ef222
+Parent Digest: sha256:bc11278602c48a60f71ea01031c54a73878d19db4803f7dd8705aa77bab89808
+Analysis Status: not_analyzed
+Image Type: docker
+Analyzed At: None
+Image ID: ace3932f8772e8a78327bf00e25a704e4a09e672d64538bb84db3bb5b47be566
+Dockerfile Mode: Actual
+Distro: None
+Distro Version: None
+Size: None
+Architecture: None
+Layer Count: None
+
+Full Tag: docker.io/diamol/openjdk:latest
+Tag Detected At: 2024-05-28T23:54:33Z
 
 # wait for the analysis to complete:
 > docker container exec anchore-engine-api-1 anchore-cli image wait diamol/openjdk
+Image Digest: sha256:6b39ed34b004ea3a9cc26985129bc76cea4006d1af45e15fb33b7353488ef222
+Parent Digest: sha256:bc11278602c48a60f71ea01031c54a73878d19db4803f7dd8705aa77bab89808
+Analysis Status: analyzed
+Image Type: docker
+Analyzed At: 2024-05-28T23:54:58Z
+Image ID: ace3932f8772e8a78327bf00e25a704e4a09e672d64538bb84db3bb5b47be566
+Dockerfile Mode: Actual
+Distro: debian
+Distro Version: 10
+Size: 231352320
+Architecture: amd64
+Layer Count: 5
+
+Full Tag: docker.io/diamol/openjdk:latest
+Tag Detected At: 2024-05-28T23:54:33Z
 ```
+
+Next "Try it now":
+```bash
+# check what Java components Anchore has found in the image:
+> docker container exec anchore-engine-api-1 anchore-cli image content diamol/openjdk java
+Package        Specification-Version        Implementation-Version        Location
+jrt-fs         11                           11.0.10                       /usr/local/openjdk-11/lib/jrt-fs.jar
+
+# and check for known security issues:
+> docker container exec anchore-engine-api-1 anchore-cli image vuln diamol/openjdk all
+```
+(No output from that last command.)
 
 
 
