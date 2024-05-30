@@ -3336,10 +3336,12 @@ Wow!
 ```bash
 # build the full v3 image:
 > docker image build -t diamol/ch17-ml-dataset:v3 -f Dockerfile.v3 .
-
+[+] Building 61.3s (10/10) FINISHED
+...
 # build to the 'download' target - same Dockerfile, different tag:
 > docker image build -t diamol/ch17-ml-dataset:v3-download -f Dockerfile.v3 --target download .
-[+] Building 61.3s (10/10) FINISHED
+# n.b., I actually built this third, but I'm guessing we'd get the same results...
+[+] Building 4.2s (6/6) FINISHED
 ...
 # and build to the 'expand' target:
 > docker image build -t diamol/ch17-ml-dataset:v3-expand -f Dockerfile.v3 --target expand .
@@ -3347,11 +3349,12 @@ Wow!
 ...
 # check the image sizes:
 > docker image ls -f reference=diamol/ch17-ml-dataset:v3*
-REPOSITORY               TAG         IMAGE ID       CREATED          SIZE
-diamol/ch17-ml-dataset   v3-expand   7fffd8c76ee3   47 seconds ago   2.46GB
-diamol/ch17-ml-dataset   v3          bce868ddba0e   47 seconds ago   25.5MB
+REPOSITORY               TAG           IMAGE ID       CREATED         SIZE
+diamol/ch17-ml-dataset   v3            bce868ddba0e   2 minutes ago   25.5MB
+diamol/ch17-ml-dataset   v3-expand     7fffd8c76ee3   2 minutes ago   2.46GB
+diamol/ch17-ml-dataset   v3-download   90b618282262   3 minutes ago   252MB
 ```
-I don't see v3-download...
+
 
 
 
