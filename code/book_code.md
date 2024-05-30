@@ -3354,11 +3354,51 @@ diamol/ch17-ml-dataset   v3            bce868ddba0e   2 minutes ago   25.5MB
 diamol/ch17-ml-dataset   v3-expand     7fffd8c76ee3   2 minutes ago   2.46GB
 diamol/ch17-ml-dataset   v3-download   90b618282262   3 minutes ago   252MB
 ```
+I re-ran the `expand` one & it only took `[+] Building 0.8s (8/8) FINISHED`.
 
+```
+> cd ../jenkins
 
+# build the v1 image and the optimized v2 image:
+> docker image build -t diamol/ch17-jenkins:v1 .
+# failed to download http://mirrors.jenkins.io/war-stable/2.190.2/jenkins.war, so I changed the `http` to `https` in the Dockerfile
+# then it succeeded:
+[+] Building 5.8s (9/9) FINISHED
+...
+> docker image build -t diamol/ch17-jenkins:v2 -f Dockerfile.v2 .
+# I did the same fix as the above & it worked:
+[+] Building 6.1s (9/9) FINISHED
+...
 
+# now change the config file both Dockerfiles use:
+> echo 2.0 > jenkins.install.UpgradeWizard.state
 
+# repeat the builds and see how long they run:
+> docker image build -t diamol/ch17-jenkins:v1 .
+[+] Building 5.7s (9/9) FINISHED
+...
+> docker image build -t diamol/ch17-jenkins:v2 -f Dockerfile.v2 .
+[+] Building 0.4s (9/9) FINISHED
+...
+```
 
+### 17.6 Lab
+
+```bash
+> docker image build -t diamol/ch17lab:v1 .
+> docker image build -t diamol/ch17lab:v2 -f Dockerfile_v1.txt .
+> docker image ls -f reference=diamol/ch17lab*
+```
+Didn't even get the original built, due to:
+```
+...
+ => ERROR [ 4/10] RUN apt-get install -y apt-transport-https                                                       0.5s
+...
+ERROR: failed to solve: process "/bin/sh -c apt-get install -y apt-transport-https" did not complete successfully: exit code: 100
+```
+I tried these, with no success:
+* Ran a `docker system prune`, `Total reclaimed space: 265.7MB`.
+...and a couple other things via [this](https://stackoverflow.com/questions/38002543/apt-get-update-returned-a-non-zero-code-100) and [this](https://unix.stackexchange.com/questions/338915/how-to-fix-apt-get-install-f-apt-transport-https-error-404-not-found) thread.
 
 
 

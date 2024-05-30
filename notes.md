@@ -197,6 +197,17 @@ Like the author says, the truth-app example is contrived... I found [this](https
 
 * alternatives to Anchore: Clair, Aqua
 
+> You should always use explicit versions when you add packages to your image, so you know exactly what you’re running, and you can choose when to update.
+* see use of `apt` commands and `ARG` instructions
+
+### Section 17.5: Understanding why optimization counts
+> You’ve seen in this chapter that you can follow some simple best practices and make your Dockerfiles a joy to work with. Those practices boil down to
+> 
+> * Choose the right base image--ideally curate your own set of golden images.
+> * Use multi-stage Dockerfiles for all but the simplest apps.
+> * Don’t add any unnecessary packages or files--focus on layer size.
+> * Sort your Dockerfile instructions by change frequency--maximize the cache.
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
