@@ -3296,18 +3296,62 @@ jrt-fs         11                           11.0.10                       /usr/l
 ```
 (No output from that last command.)
 
+## Section 17.3: Minimizing image layer count and layer size
+```bash
+> cd ch17/exercises/socat
+# the v1 image installs packages using standard apt-get commands:
+> docker image build -t diamol/ch17-socat:v1 .
 
+# v2 installs the same packages but using optimization tweaks:
+> docker image build -t diamol/ch17-socat:v2 -f Dockerfile.v2 .
 
+# check the image sizes:
+> docker image ls -f reference=diamol/ch17-socat
+```
+Failed, likely due to Windows. Will try on Play with Docker. Also failed there...
 
+Anyway it seems the `--no-install-recommends` flag + `&& rm -rf /var/lib/apt/lists/*` **in the same `RUN` step** are responsible for the ~20 MB savings in the author's example. A separate `RUN` step would mean another image layer, and no cost savings!
 
+This exercise downloads [this file](https://archive.ics.uci.edu/ml/machine-learning-databases/url/url_svmlight.tar.gz):
+```bash
+> cd ch17/exercises/ml-dataset
 
+# v1 downloads and expands the archive, then deletes unnecessary files:
+> docker image build -t diamol/ch17-ml-dataset:v1 .
+[+] Building 31.9s (9/9) FINISHED
+...
+# v2 downloads the archive but only expands the necessary file:
+> docker image build -t diamol/ch17-ml-dataset:v2 -f Dockerfile.v2 .
+[+] Building 24.4s (7/7) FINISHED
+...
+# compare the sizes:
+> docker image ls -f reference=diamol/ch17-ml-dataset
+REPOSITORY               TAG       IMAGE ID       CREATED              SIZE
+diamol/ch17-ml-dataset   v2        f124dc1ff892   20 seconds ago       25.5MB
+diamol/ch17-ml-dataset   v1        7894208c7e5f   About a minute ago   2.48GB
+```
+Wow!
 
+## Section 17.4: Taking your multi-stage builds to the next level
+```bash
+# build the full v3 image:
+> docker image build -t diamol/ch17-ml-dataset:v3 -f Dockerfile.v3 .
 
-
-
-
-
-
+# build to the 'download' target - same Dockerfile, different tag:
+> docker image build -t diamol/ch17-ml-dataset:v3-download -f Dockerfile.v3 --target download .
+[+] Building 61.3s (10/10) FINISHED
+...
+# and build to the 'expand' target:
+> docker image build -t diamol/ch17-ml-dataset:v3-expand -f Dockerfile.v3 --target expand .
+[+] Building 4.2s (8/8) FINISHED
+...
+# check the image sizes:
+> docker image ls -f reference=diamol/ch17-ml-dataset:v3*
+REPOSITORY               TAG         IMAGE ID       CREATED          SIZE
+diamol/ch17-ml-dataset   v3-expand   7fffd8c76ee3   47 seconds ago   2.46GB
+diamol/ch17-ml-dataset   v3          bce868ddba0e   47 seconds ago   25.5MB
+```
+I don't see v3-download...
 
 
 

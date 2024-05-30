@@ -195,6 +195,8 @@ Truth! I cleared some on my work machine recently & freed-up a LOT of space.
 
 Like the author says, the truth-app example is contrived... I found [this](https://redfoxsec.com/blog/introduction-to-docker-container-breakouts/) and [this](https://www.aquasec.com/cloud-native-academy/container-security/container-escape/) talking about container breakout/escape.
 
+* alternatives to Anchore: Clair, Aqua
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
