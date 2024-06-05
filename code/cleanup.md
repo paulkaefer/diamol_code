@@ -8,3 +8,4 @@ Reclaim disk space:
 docker image rm -f $(docker image ls -f reference='diamol/*' -q)
 ```
 
+Also `docker system prune`; you can run `docker system df` before/after.

@@ -208,6 +208,15 @@ Like the author says, the truth-app example is contrived... I found [this](https
 > * Don’t add any unnecessary packages or files--focus on layer size.
 > * Sort your Dockerfile instructions by change frequency--maximize the cache.
 
+## Chapter 18: Application configuration management in containers
+* Re: 12factor.net (see below):
+  * "It’s a useful approach that helps you get into the mindset that containers are ephemeral because changing environment variables to set application config means replacing containers."
+* "Node-config has a slightly unusual implementation: rather than specifying individual settings as environment variables, you need to provide the settings as a JSON-formatted string in the environment variable."
+* risk of including sensitive settings in config files
+* "Go has a popular configuration module called Viper" similar to the .NET Core libraries & node-config.
+### Questions/further reading:
+- [ ] do folks at work recommend/use/reference https://12factor.net/?
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

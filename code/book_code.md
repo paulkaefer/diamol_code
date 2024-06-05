@@ -3382,7 +3382,7 @@ I re-ran the `expand` one & it only took `[+] Building 0.8s (8/8) FINISHED`.
 ...
 ```
 
-### 17.6 Lab
+## 17.6 Lab
 
 ```bash
 > docker image build -t diamol/ch17lab:v1 .
@@ -3399,6 +3399,121 @@ ERROR: failed to solve: process "/bin/sh -c apt-get install -y apt-transport-htt
 I tried these, with no success:
 * Ran a `docker system prune`, `Total reclaimed space: 265.7MB`.
 ...and a couple other things via [this](https://stackoverflow.com/questions/38002543/apt-get-update-returned-a-non-zero-code-100) and [this](https://unix.stackexchange.com/questions/338915/how-to-fix-apt-get-install-f-apt-transport-https-error-404-not-found) thread.
+
+
+# Chapter 18: Application configuration management in containers
+
+## Section 18.1: A multi-tiered approach to app configuration
+First `Try it now`, with output:
+```bash
+> cd ch18/exercises/access-log
+
+# run a container with the default config in the image:
+> docker container run -d -p 8080:80 diamol/ch18-access-log
+Unable to find image 'diamol/ch18-access-log:latest' locally
+latest: Pulling from diamol/ch18-access-log
+e7c96db7181b: Already exists 
+bbec46749066: Already exists 
+89e5cf82282d: Already exists 
+5de6895db72f: Already exists 
+31a11eedc733: Pull complete 
+aa5af998c4ac: Pull complete 
+b6f75bc947fe: Pull complete 
+Digest: sha256:e16fa41c8745f2ecc093bb264bdd1bf7985f64fd0a98e5bf59788dfcbfe674f2
+Status: Downloaded newer image for diamol/ch18-access-log:latest
+2099e7a31389fc9e409ddc87f2c603563b7acf220a5ca123f2b8f5a9923dc6a0
+
+# run a container loading a local config file override:
+> docker container run -d -p 8081:80 -v "$(pwd)/config/dev:/app/config-override" diamol/ch18-access-log
+8019db7bfa606575bf074a6c98410ba3ebad353af91804bc66d06e04ebcb6b69
+
+# check the config APIs in each container:
+> curl http://localhost:8080/config
+{"release":"19.12","environment":"UNKNOWN","metricsEnabled":true}
+> curl http://localhost:8081/config
+{"release":"19.12","environment":"DEV","metricsEnabled":false}
+```
+
+"Run a third version of the access log container in development mode but with metrics enabled. Use the volume mount to load the dev config and an environment variable to override the metrics setting:"
+```bash
+# run a container with an override file and an environment variable:
+> docker container run -d -p 8082:80 -v "$(pwd)/config/dev:/app/config-override" -e NODE_CONFIG='{\"metrics\": {\"enabled\":\"true\"}}' diamol/ch18-access-log
+759805a933aefd5b72cd98c47783fb9f9ad3d75be0c69cfb5aad738abb9dc016
+
+# check the config:
+> curl http://localhost:8082/config
+{"release":"19.12","environment":"DEV","metricsEnabled":false}
+```
+Referenced [the Docker docs](https://docs.docker.com/reference/cli/docker/container/run/) for the flags:
+* `-e` sets env vars
+* `-v` bind mounts a volume
+
+## Section 18.2: Packaging config for every environment
+```bash
+# run the to-do list app with default config:
+> docker container run -d -p 8083:80 diamol/ch18-todo-list
+Unable to find image 'diamol/ch18-todo-list:latest' locally
+latest: Pulling from diamol/ch18-todo-list
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+641667054481: Already exists 
+bddf18de637a: Pull complete 
+cf4444240e16: Pull complete 
+Digest: sha256:5482dd9673556e78fbcddb57f861d489bd696cf0523127f992d8bb90c060864c
+Status: Downloaded newer image for diamol/ch18-todo-list:latest
+7aa4368bbae9234aa1b94fd638e9baf694a8c2a56bbcf0603f844c0c46dcfc77
+
+# run the app with the config for the test environment:
+> docker container run -d -p 8084:80 -e DOTNET_ENVIRONMENT=Test diamol/ch18-todo-list
+fbbcec73d9d714948d6fbba4d55604f22b393aa97b3735ec100663c101475677
+```
+Neat:
+* most of the image layers are already local
+* this is super intuitive for setting the env var... at `http://localhost:8083/diagnostics` I see:
+```
+Release Environment Hostname    .NET Version    OS Architecture OS Description
+19.12   DEV 7aa4368bbae9    .NET Core 3.0.3 X64 Linux 6.6.12-linuxkit #1 SMP PREEMPT_DYNAMIC Tue Jan 30 09:48:40 UTC 2024
+```
+* ...and at `http://localhost:8084/diagnostics` I see:
+```
+Release Environment Hostname    .NET Version    OS Architecture OS Description
+19.12   TEST    fbbcec73d9d7    .NET Core 3.0.3 X64 Linux 6.6.12-linuxkit #1 SMP PREEMPT_DYNAMIC Tue Jan 30 09:48:40 UTC 2024
+```
+Minor complaint: I don't like the value being `Test` in the command; I'd prefer all caps or all lowercase!
+
+Next exercise:
+```bash
+> cd ../todo-list
+> docker container run -d -p 8085:80 -e DOTNET_ENVIRONMENT=Production -v "$(pwd)/config/prod-local:/app/config-override" diamol/ch18-todo-list
+6f669c6c5fcb7fdaf9448d8b79dd052e22f1276925e8ca416ad9b3beb08216d9
+```
+At `http://localhost:8085/diagnostics`, I see:
+```
+Release Environment Hostname    .NET Version    OS Architecture OS Description
+19.12   PROD    6f669c6c5fcb    .NET Core 3.0.3 X64 Linux 6.6.12-linuxkit #1 SMP PREEMPT_DYNAMIC Tue Jan 30 09:48:40 UTC 2024
+```
+
+"Run the same local version of production but with a custom release name by overriding that setting with an environment variable:"
+```bash
+# run the container with a bind mount and a custom environment variable:
+> docker container run -d -p 8086:80 -e DOTNET_ENVIRONMENT=Production -e release=CUSTOM -v "$(pwd)/config/prod-local:/app/config-override" diamol/ch18-todo-list
+8de1a7ba96f673e4c9158f0a9ff86ceaf7ebceeb3dd81a73a19ae4ea4dd3783c
+```
+At `http://localhost:8086/diagnostics`, I see:
+```
+Release Environment Hostname    .NET Version    OS Architecture OS Description
+CUSTOM  PROD    8de1a7ba96f6    .NET Core 3.0.3 X64 Linux 6.6.12-linuxkit #1 SMP PREEMPT_DYNAMIC Tue Jan 30 09:48:40 UTC 2024
+```
+
+## Section 18.3: Loading configuration from the runtime
+
+
+
+
+
+
 
 
 
