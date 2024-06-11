@@ -3509,17 +3509,162 @@ CUSTOM  PROD    8de1a7ba96f6    .NET Core 3.0.3 X64 Linux 6.6.12-linuxkit #1 SMP
 
 ## Section 18.3: Loading configuration from the runtime
 
+### run the container:
+`docker container run -d -p 8086:80 diamol/ch18-image-gallery`
+Output:
+```
+Unable to find image 'diamol/ch18-image-gallery:latest' locally
+latest: Pulling from diamol/ch18-image-gallery
+9123ac7c32f7: Pull complete 
+59a0f4eee82c: Pull complete 
+ba08985a80b3: Pull complete 
+28f1ac8458cb: Pull complete 
+0d1db42ad3af: Pull complete 
+Digest: sha256:b406a1b62a7a14ab150486dc4e61bbc1766eaabba1b95586e66037f6775f5060
+Status: Downloaded newer image for diamol/ch18-image-gallery:latest
+f416bb2ad1280da1e190f1590699678444518525ee0f5201c06cf6f7868a5d00
+```
 
+### check the config API:
+`curl http://localhost:8086/config`
+Output:
+```
+{"Release":"19.12","Environment":"UNKNOWN","Metrics":{"Enabled":true},"Apis":{"access":{"Url":"http://accesslog/access-log"},"image":{"Url":"http://iotd/image"}}}
+```
 
+### Next Try It Now:
+`cd ../ch18/exercises/image-gallery`
 
+#### run the container with a bind mount to the local config directory:
+`docker container run -d -p 8087:80 -v "$(pwd)/config/dev:/app/config-override" diamol/ch18-image-gallery`
+```
+ea1a6bd45a058386e71424344206d318b8e4c363923d87138235e34fb4deed11
+```
 
+#### check config again:
+`curl http://localhost:8087/config`
+```
+{"Release":"19.12","Environment":"DEV","Metrics":{"Enabled":false},"Apis":{"access":{"Url":"http://accesslog/access-log"},"image":{"Url":"http://iotd/image"}}}
+```
 
+### **TRY IT NOW** Run the container with an environment variable override.
+`cd ch18/exercises/image-gallery`
 
+#### run the container with config override and an environment variable:
+`docker container run -d -p 8088:80 -v "$(pwd)/config/dev:/app/config-override" -e IG_METRICS.ENABLED=TRUE diamol/ch18-image-gallery`
+```
+3e90a6bb49fd0235ab640fc0f3c82a3ecd6c18a58c1b558682f2e4bee07db9e9
+```
 
+#### check the config:
+`curl http://localhost:8088/config`
+```
+{"Release":"19.12","Environment":"DEV","Metrics":{"Enabled":true},"Apis":{"access":{"Url":"http://accesslog/access-log"},"image":{"Url":"http://iotd/image"}}}
+```
+Same as the above?
 
+## Section 18.4: Configuring legacy apps in the same way as new apps
 
+### **TRY IT NOW** Run the “legacy” app with default config settings and with a file override:
 
+`cd ch18/exercises/image-of-the-day`
 
+#### run a container with default configuration:
+`docker container run -d -p 8089:80 diamol/ch18-image-of-the-day`
+Output:
+```
+Unable to find image 'diamol/ch18-image-of-the-day:latest' locally
+latest: Pulling from diamol/ch18-image-of-the-day
+68ced04f60ab: Already exists 
+4874c5772968: Pull complete 
+8afa8e973e22: Pull complete 
+d5c28bc4eb55: Pull complete 
+dd08aa844a00: Pull complete 
+ae0e4c7eca2e: Pull complete 
+06569f91ca1a: Pull complete 
+Digest: sha256:b55552d77fc6087e14e700bdc54da8c105e08c57ec9f5232481155ae5f61a57e
+Status: Downloaded newer image for diamol/ch18-image-of-the-day:latest
+398e0e13d9189e2c4fae86a13a6d4b9f9c85bef3cf06fa8eb5b466432d0d7092
+```
+
+#### run with a config override file in a bind mount:
+`docker container run -d -p 8090:80 -v "$(pwd)/config/dev:/config-override" -e CONFIG_SOURCE_PATH="/config-override/application.properties" diamol/ch18-image-of-the-day`
+```
+469f20bf7398d39a68212d777b17fc52d32caf365944a49903f93f95f7b69465
+```
+
+#### check the config settings:
+`curl http://localhost:8089/config`
+```
+{"release":"19.12","environment":"UNKNOWN","managementEndpoints":"health,info,prometheus","apodUrl":"https://api.nasa.gov/planetary/apod?api_key="}
+```
+`curl http://localhost:8090/config`
+```
+{"release":"19.12","environment":"DEV","managementEndpoints":"health","apodUrl":"https://api.nasa.gov/planetary/apod?api_key="}
+```
+
+### **TRY IT NOW** The legacy app doesn’t use environment variables, but the config utility sets them up so the user experience is the same as a modern app.
+
+#### run a container with an override file and an environment variable:
+`docker run -d -p 8091:80 -v "$(pwd)/config/dev:/config-override" -e CONFIG_SOURCE_PATH="/config-override/application.properties" -e IOTD_ENVIRONMENT="custom" diamol/ch18-image-of-the-day`
+```
+36d3ffe92c280ae5fedf358a4ee9d1a1a421b2943462389836eedec3f8126c5b
+```
+
+#### check the config settings:
+`curl http://localhost:8091/config`
+```
+{"release":"19.12","environment":"custom","managementEndpoints":"health","apodUrl":"https://api.nasa.gov/planetary/apod?api_key="}
+```
+
+### **TRY IT NOW** Let’s run the app as a whole with a fixed set of configuration for all the components. Start by removing all running containers, and then run the app with Docker Compose:
+#### clear all containers:
+`docker container rm -f $(docker container ls -aq)`
+```
+36d3ffe92c28
+...
+2099e7a31389
+```
+`cd ..`
+
+#### run the app with the config settings:
+`docker-compose up -d`
+```
+[+] Running 2/4
+ ⠴ Network exercises_iotd-net           Cr...                              1.6s 
+ ✔ Container exercises-accesslog-1      Started                            1.1s 
+ ✔ Container exercises-iotd-1           St...                              1.2s 
+ ⠸ Container exercises-image-gallery-1  Starting                           1.3s 
+Error response from daemon: driver failed programming external connectivity on endpoint exercises-image-gallery-1 (e9d8bb28fd089fc84f0bb808f547b762569b19b07316d66c595ab878663ead32): listen tcp4 0.0.0.0:8010: bind: address already in use
+```
+
+#### check all the config APIs:
+`curl http://localhost:8030/config`
+```
+{"release":"19.12","environment":"DEV","metricsEnabled":"true"}
+```
+`curl http://localhost:8020/config`
+```
+{"release":"19.12","environment":"DEV","managementEndpoints":"health,prometheus","apodUrl":"https://api.nasa.gov/planetary/apod?api_key="}
+```
+`curl http://localhost:8010/config`
+Initially pulled HTML for app that pulls from https://apod.nasa.gov/apod/ (I verified that it shows today's image).
+I changed the docker-compose.yml file to use port `8009`. Now the `docker-compose up -d` returns:
+```
+[+] Running 3/3
+ ✔ Container exercises-iotd-1           Ru...                              0.0s 
+ ✔ Container exercises-accesslog-1      Running                            0.0s 
+ ✔ Container exercises-image-gallery-1  Started                            0.6s
+```
+...and now `curl http://localhost:8009/config` returns:
+```
+{"Release":"19.12","Environment":"DEV","Metrics":{"Enabled":true},"Apis":{"access":{"Url":"http://accesslog/access-log"},"image":{"Url":"http://iotd/image"}}}
+```
+
+## Section 18.5: Understanding why a flexible configuration model pays off
+
+## Chapter 18 Lab
+I reviewed the files briefly; the configuration changes seem easy enough to figure out.
 
 
 

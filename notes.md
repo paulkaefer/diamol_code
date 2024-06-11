@@ -214,6 +214,8 @@ Like the author says, the truth-app example is contrived... I found [this](https
 * "Node-config has a slightly unusual implementation: rather than specifying individual settings as environment variables, you need to provide the settings as a JSON-formatted string in the environment variable."
 * risk of including sensitive settings in config files
 * "Go has a popular configuration module called Viper" similar to the .NET Core libraries & node-config.
+* Section 18.4 ends with, "We’ll wrap up this chapter with some thoughts on where that multi-tiered configuration model can take you."
+
 ### Questions/further reading:
 - [ ] do folks at work recommend/use/reference https://12factor.net/?
 
