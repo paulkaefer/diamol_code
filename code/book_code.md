@@ -3889,32 +3889,48 @@ a7b00b894f1e
  
 # start the logging stack:
 > docker-compose -f fluentd/docker-compose.yml up -d
-[+] Running 16/18
- ⠧ kibana 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulling                      5.8s 
+[+] Running 18/18
+ ✔ kibana 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                      59.6s 
    ✔ 169185f82c45 Pull complete                                            0.4s 
-   ✔ 53e52a67e355 Download complete                                        0.8s 
-   ✔ fc2cb9a5e98e Download complete                                        0.6s 
-   ✔ de84136c9ba8 Download complete                                        1.1s 
-   ✔ a5f764c14f77 Download complete                                        3.0s 
-   ✔ 3eefface81a7 Download complete                                        1.3s 
-   ✔ 2b2d60693d63 Download complete                                        1.6s 
-   ✔ 4eb86a9a9e76 Download complete                                        1.9s 
- ⠇ elasticsearch 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulling               5.8s 
+   ✔ 53e52a67e355 Pull complete                                            0.8s 
+   ✔ fc2cb9a5e98e Pull complete                                            0.6s 
+   ✔ de84136c9ba8 Pull complete                                            1.1s 
+   ✔ a5f764c14f77 Pull complete                                            3.0s 
+   ✔ 3eefface81a7 Pull complete                                            1.3s 
+   ✔ 2b2d60693d63 Pull complete                                            1.6s 
+   ✔ 4eb86a9a9e76 Pull complete                                            1.9s 
+ ✔ elasticsearch 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                8.2s 
    ✔ 45b42c59be33 Already exists                                           0.0s 
    ✔ c3f1fbf102b7 Already exists                                           0.0s 
    ✔ 1067f9902c49 Already exists                                           0.0s 
    ✔ e1e4050aab9e Already exists                                           0.0s 
    ✔ 7f89f58f441d Already exists                                           0.0s 
    ✔ 38deebc65d28 Pull complete                                            2.3s 
-   ✔ c901c48e7e9b Download complete                                        4.1s 
-   ✔ 213c2f1b9ecb Download c
+   ✔ c901c48e7e9b Pull complete                                            4.1s 
+   ✔ 213c2f1b9ecb Pull complete                                            2.9s 
+[+] Running 3/4
+ ⠦ Network fluentd_default            Created                              1.7s 
+ ✔ Container fluentd-elasticsearch-1  Started                              1.3s 
+ ✔ Container fluentd-fluentd-1        Sta...                               1.4s 
+ ✔ Container fluentd-kibana-1         Star...                              1.4s
  
 > docker container run -d --log-driver=fluentd diamol/ch19-timecheck:5.0
+49293b59719feef8e37cfa7461d7528f3452c547e9bad3de58ec4f0279439b9e
+docker: Error response from daemon: failed to create task for container: failed to initialize logging driver: dial tcp 127.0.0.1:24224: connect: connection refused.
 ```
+http://localhost:5601/ --> http://localhost:5601/app/kibana#/home?_g=()
+Shows "Add Data to Kibana" & a very nice interface.
 
-
-
-
-
+```bash
+# from the cd ch19/exercises folder
+> docker-compose -f image-gallery/docker-compose.yml up -d
+[+] Running 2/4
+ ⠸ Network image-gallery_iotd-net           Created                        1.3s 
+ ✔ Container image-gallery-iotd-1           Started                        1.1s 
+ ✔ Container image-gallery-accesslog-1      Started                        1.1s 
+ ⠙ Container image-gallery-image-gallery-1  Starting                       1.1s 
+Error response from daemon: driver failed programming external connectivity on endpoint image-gallery-image-gallery-1 (92919966006ae836b37ff76923e9cd944804858fd3203f142392b9eb0531f319): listen tcp4 0.0.0.0:8010: bind: address already in use
+```
+Ahh, http://localhost:8010/ still shows the APOD app from the last chapter.
 
 
