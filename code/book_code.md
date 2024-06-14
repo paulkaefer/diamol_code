@@ -3668,7 +3668,7 @@ I reviewed the files briefly; the configuration changes seem easy enough to figu
 
 
 # Chapter 19: Writing and managing application logs with Docker
-
+Started this chapter on my Windows 11 PC:
 ## Section 19.1: Welcome to stderr and stdout!
 
 ```bash
@@ -3813,6 +3813,7 @@ Init
 ```
 
 ## Section 19.3 Collecting and forwarding container logs
+Ran on my MacBook Pro:
 ```bash
 > cd ../diamol/ch19/exercises/fluentd
 
@@ -3836,14 +3837,80 @@ ef5a1e0b6c7302c2f4cbb95db2f4cdc62b7f5951270d223f6877d25c4f825690
 
 # now run a timecheck container set to use Docker's Fluentd log driver:
 > docker container run -d --log-driver=fluentd --name timecheck5 diamol/ch19-timecheck:5.0
+Unable to find image 'diamol/ch19-timecheck:5.0' locally
+5.0: Pulling from diamol/ch19-timecheck
+68ced04f60ab: Already exists 
+e936bd534ffb: Already exists 
+caf64655bcbb: Already exists 
+d1927dbcbcab: Already exists 
+2d37284de485: Pull complete 
+5a64533118a1: Pull complete 
+8d4202fad93f: Pull complete 
+75bf5af02fcb: Pull complete 
+a37af5fba6c1: Pull complete 
+Digest: sha256:25d35e4ac4f9f93ccfe0f617f8abfbac7075cc0704111dbc060863a67409fb04
+Status: Downloaded newer image for diamol/ch19-timecheck:5.0
+7050503ad921909cbb8c12478138bcde2e9b0577daf41575dcbdd562d815c04f
 
 # check the timecheck container logs:
 > docker container logs timecheck5
+Init
+2024-06-14 18:34:28.712 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.28
+2024-06-14 18:34:33.707 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.33
+2024-06-14 18:34:38.710 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.38
+2024-06-14 18:34:43.706 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.43
+2024-06-14 18:34:48.706 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.48
+2024-06-14 18:34:53.705 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.53
+2024-06-14 18:34:58.705 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:34.58
+2024-06-14 18:35:03.706 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:35.03
 
 # and check the Fluentd container logs:
 > docker container logs --tail 1 fluentd
+2024-06-14 18:35:13.000000000 +0000 7050503ad921: {"container_id":"7050503ad921909cbb8c12478138bcde2e9b0577daf41575dcbdd562d815c04f","container_name":"/timecheck5","source":"stdout","log":"2024-06-14 18:35:13.707 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:35.13"}
 ```
+Hmm, I did not get the expected error with checking the `timecheck5` logs...
 
+```bash
+> docker container rm -f $(docker container ls -aq)
+7050503ad921
+ef5a1e0b6c73
+58f4f6569755
+6f691805b80b
+e40d04552373
+d671aaa3350d
+66cbc11ec46a
+c2061a348d9a
+92ef3f31f0f6
+9535f64e2c2c
+1651731f2fe0
+a7b00b894f1e
+272b2e60dd27
+> cd ..
+ 
+# start the logging stack:
+> docker-compose -f fluentd/docker-compose.yml up -d
+[+] Running 16/18
+ ⠧ kibana 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulling                      5.8s 
+   ✔ 169185f82c45 Pull complete                                            0.4s 
+   ✔ 53e52a67e355 Download complete                                        0.8s 
+   ✔ fc2cb9a5e98e Download complete                                        0.6s 
+   ✔ de84136c9ba8 Download complete                                        1.1s 
+   ✔ a5f764c14f77 Download complete                                        3.0s 
+   ✔ 3eefface81a7 Download complete                                        1.3s 
+   ✔ 2b2d60693d63 Download complete                                        1.6s 
+   ✔ 4eb86a9a9e76 Download complete                                        1.9s 
+ ⠇ elasticsearch 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulling               5.8s 
+   ✔ 45b42c59be33 Already exists                                           0.0s 
+   ✔ c3f1fbf102b7 Already exists                                           0.0s 
+   ✔ 1067f9902c49 Already exists                                           0.0s 
+   ✔ e1e4050aab9e Already exists                                           0.0s 
+   ✔ 7f89f58f441d Already exists                                           0.0s 
+   ✔ 38deebc65d28 Pull complete                                            2.3s 
+   ✔ c901c48e7e9b Download complete                                        4.1s 
+   ✔ 213c2f1b9ecb Download c
+ 
+> docker container run -d --log-driver=fluentd diamol/ch19-timecheck:5.0
+```
 
 
 
