@@ -219,6 +219,8 @@ Like the author says, the truth-app example is contrived... I found [this](https
 ### Questions/further reading:
 - [ ] do folks at work recommend/use/reference https://12factor.net/?
 
+## Chapter 19: Writing and managing application logs with Docker
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

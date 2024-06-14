@@ -3667,5 +3667,159 @@ I changed the docker-compose.yml file to use port `8009`. Now the `docker-compos
 I reviewed the files briefly; the configuration changes seem easy enough to figure out.
 
 
+# Chapter 19: Writing and managing application logs with Docker
+
+## Section 19.1: Welcome to stderr and stdout!
+
+```bash
+# run the container in the foreground:
+> docker container run diamol/ch15-timecheck:3.0
+
+# exit the container with Ctrl-C when you're done
+```
+Output:
+```bash
+Unable to find image 'diamol/ch15-timecheck:3.0' locally
+3.0: Pulling from diamol/ch15-timecheck
+68ced04f60ab: Pull complete
+e936bd534ffb: Pull complete
+caf64655bcbb: Pull complete
+d1927dbcbcab: Pull complete
+3d3a19b0b102: Pull complete
+da6f4a553eb0: Pull complete
+Digest: sha256:8c06717f0407b1c8dbb8a7ebdd7f3209b288d023791262a215bce8df3317f8c9
+Status: Downloaded newer image for diamol/ch15-timecheck:3.0
+Environment: DEV; version: 3.0; time check: 16:21.52
+Environment: DEV; version: 3.0; time check: 16:21.57
+Environment: DEV; version: 3.0; time check: 16:22.02
+... (stepped away for a bit)
+Environment: DEV; version: 3.0; time check: 18:04.17
+Environment: DEV; version: 3.0; time check: 18:04.22
+Environment: DEV; version: 3.0; time check: 18:04.27
+```
+
+**TRY IT NOW**: Run a container from the same image in the background as a detached container, and check the logs and then the path to the log file:
+```bash
+# run a detached container
+> docker container run -d --name timecheck diamol/ch15-timecheck:3.0
+35121a206016f36b2c54fd427a11811ecc769fd24ec4a20eed47420c167e7ded
+
+# check the most recent log entry:
+> docker container logs --tail 1 timecheck
+Environment: DEV; version: 3.0; time check: 18:05.51
+# stop the container and check the logs again:
+> docker container stop timecheck
+timecheck
+> docker container logs --tail 1 timecheck
+Environment: DEV; version: 3.0; time check: 18:05.56
+
+# check where Docker stores the container log file:
+> docker container inspect --format='{{.LogPath}}' timecheck
+'/var/lib/docker/containers/35121a206016f36b2c54fd427a11811ecc769fd24ec4a20eed47420c167e7ded/35121a206016f36b2c54fd427a11811ecc769fd24ec4a20eed47420c167e7ded-json.log'
+```
+
+Trying again, but with log options for three rolling log files, max 5 KB each:
+```bash
+# run with log options and an app setting to write lots of logs:
+> docker container run -d --name timecheck2 --log-opt max-size=5k --log-opt max-file=3 -e Timer__IntervalSeconds=1 diamol/ch15-timecheck:3.0
+7eb52f8bfb24e7a6158aef0330947ec7185ab863e4e8fc5ad956f2514e00ee25
+
+# wait for a few minutes
+
+# check the logs:
+docker container inspect --format='{{.LogPath}}' timecheck2
+'/var/lib/docker/containers/7eb52f8bfb24e7a6158aef0330947ec7185ab863e4e8fc5ad956f2514e00ee25/7eb52f8bfb24e7a6158aef0330947ec7185ab863e4e8fc5ad956f2514e00ee25-json.log'
+```
+
+## Section 19.2 Relaying logs from other sinks to stdout
+App that writes logs to a file instead of stdout:
+```bash
+# run a container from the new image:
+> docker container run -d --name timecheck3 diamol/ch19-timecheck:4.0
+Unable to find image 'diamol/ch19-timecheck:4.0' locally
+4.0: Pulling from diamol/ch19-timecheck
+68ced04f60ab: Already exists
+e936bd534ffb: Already exists
+caf64655bcbb: Already exists
+d1927dbcbcab: Already exists
+a674bccd7133: Pull complete
+a782906b0026: Pull complete
+Digest: sha256:1455df7232a48a869438e3940e21681a1cbede9bab1b8755b6d664428ba96132
+Status: Downloaded newer image for diamol/ch19-timecheck:4.0
+f2f925f62b6e3fbacb86543786a8a526e27a4155ff66d8f24dc5afd4569098d1
+
+# check - there are no logs coming from stdout:
+> docker container logs timecheck3
+
+# now connect to the running container, for Linux:
+> docker container exec -it timecheck3 sh
+# (prompt within container)
+# OR windows containers:
+> docker container exec -it timecheck3 cmd
+# tried just for fun & got:
+OCI runtime exec failed: exec failed: unable to start container process: exec: "cmd": executable file not found in $PATH: unknown
+
+# and read the application log file:
+# cat /logs/timecheck.log
+2024-06-14 18:20:07.039 +00:00 [INF] Environment: DEV; version: 4.0; time check: 18:20.07
+2024-06-14 18:20:12.036 +00:00 [INF] Environment: DEV; version: 4.0; time check: 18:20.12
+2024-06-14 18:20:17.037 +00:00 [INF] Environment: DEV; version: 4.0; time check: 18:20.17
+2024-06-14 18:20:22.037 +00:00 [INF] Environment: DEV; version: 4.0; time check: 18:20.22
+2024-06-14 18:20:27.037 +00:00 [INF] Environment: DEV; version: 4.0; time check: 18:20.27
+2024-06-14 18:20:32.036 +00:00 [INF] Environment: DEV; version: 4.0; time check: 18:20.32
+```
+
+### **TRY IT NOW** Run a container from the new image, and verify that logs are coming from the container and that they still get written in the filesystem:
+```
+# run a container with the tail utility process:
+> docker container run -d --name timecheck4 diamol/ch19-timecheck:5.0
+Unable to find image 'diamol/ch19-timecheck:5.0' locally
+5.0: Pulling from diamol/ch19-timecheck
+68ced04f60ab: Already exists
+e936bd534ffb: Already exists
+caf64655bcbb: Already exists
+d1927dbcbcab: Already exists
+2d37284de485: Pull complete
+5a64533118a1: Pull complete
+8d4202fad93f: Pull complete
+75bf5af02fcb: Pull complete
+a37af5fba6c1: Pull complete
+Digest: sha256:25d35e4ac4f9f93ccfe0f617f8abfbac7075cc0704111dbc060863a67409fb04
+Status: Downloaded newer image for diamol/ch19-timecheck:5.0
+133c1ae42a93b9fce6796962e2fc1960e4999b7f9c22b33cddb857b553f45598
+
+# check the logs:
+> docker container logs timecheck4
+Init
+2024-06-14 18:22:42.323 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:22.42
+2024-06-14 18:22:47.320 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:22.47
+
+# and connect to the container - on Linux:
+> docker container exec -it timecheck4 sh
+
+# OR with Windows containers:
+> docker container exec -it timecheck4 cmd
+
+# check the log file:
+$ cat /logs/timecheck.log
+Init
+2024-06-14 18:22:42.323 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:22.42
+2024-06-14 18:22:47.320 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:22.47
+2024-06-14 18:22:52.321 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:22.52
+2024-06-14 18:22:57.329 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:22.57
+2024-06-14 18:23:02.318 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:23.02
+2024-06-14 18:23:07.332 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:23.07
+(and more after a few more seconds!)
+```
+
+## Section 19.3 Collecting and forwarding container logs
+
+
+
+
+
+
+
+
 
 
