@@ -3868,7 +3868,7 @@ Init
 > docker container logs --tail 1 fluentd
 2024-06-14 18:35:13.000000000 +0000 7050503ad921: {"container_id":"7050503ad921909cbb8c12478138bcde2e9b0577daf41575dcbdd562d815c04f","container_name":"/timecheck5","source":"stdout","log":"2024-06-14 18:35:13.707 +00:00 [INF] Environment: DEV; version: 5.0; time check: 18:35.13"}
 ```
-Hmm, I did not get the expected error with checking the `timecheck5` logs...
+Hmm, I did not get the expected error with checking the `timecheck5` logs. Neither did Yong.
 
 ```bash
 > docker container rm -f $(docker container ls -aq)
