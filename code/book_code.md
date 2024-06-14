@@ -3921,16 +3921,16 @@ docker: Error response from daemon: failed to create task for container: failed 
 http://localhost:5601/ --> http://localhost:5601/app/kibana#/home?_g=()
 Shows "Add Data to Kibana" & a very nice interface.
 
+http://localhost:8010/ still shows the APOD app from the last chapter, so I modified the YAML to use 8020:
 ```bash
 # from the cd ch19/exercises folder
 > docker-compose -f image-gallery/docker-compose.yml up -d
-[+] Running 2/4
- ⠸ Network image-gallery_iotd-net           Created                        1.3s 
- ✔ Container image-gallery-iotd-1           Started                        1.1s 
- ✔ Container image-gallery-accesslog-1      Started                        1.1s 
- ⠙ Container image-gallery-image-gallery-1  Starting                       1.1s 
-Error response from daemon: driver failed programming external connectivity on endpoint image-gallery-image-gallery-1 (92919966006ae836b37ff76923e9cd944804858fd3203f142392b9eb0531f319): listen tcp4 0.0.0.0:8010: bind: address already in use
+[+] Running 3/3
+ ✔ Container image-gallery-iotd-1           Running                        0.0s 
+ ✔ Container image-gallery-accesslog-1      Running                        0.0s 
+ ✔ Container image-gallery-image-gallery-1  Started                        0.9s
 ```
-Ahh, http://localhost:8010/ still shows the APOD app from the last chapter.
+
+## Section 19.4: Managing your log output and collection
 
 

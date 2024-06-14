@@ -226,6 +226,12 @@ Like the author says, the truth-app example is contrived... I found [this](https
 > Fluentd is a unified logging layer.
 * run Fluentd in a container --> it will listen for logs from other containers that use the logging driver
 
+> The model for centralized logging with a searchable data store and a user-friendly UI is one you should definitely consider when you’re getting containers ready for production.
+* Alternatives to Fluentd include Graylog, Splunk. I would imagine New Relic and Datadog, too?
+
+### Section 19.5: Understanding the container logging model
+> We used the EFK stack in this chapter--Elasticsearch, Fluentd, and Kibana...
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
