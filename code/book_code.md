@@ -3813,8 +3813,41 @@ Init
 ```
 
 ## Section 19.3 Collecting and forwarding container logs
+```bash
+> cd ../diamol/ch19/exercises/fluentd
 
+# run Fluentd publishing the standard port and using a config file:
+> docker container run -d -p 24224:24224 --name fluentd -v "$(pwd)/conf:/fluentd/etc" -e FLUENTD_CONF=stdout.conf diamol/fluentd
+Unable to find image 'diamol/fluentd:latest' locally
+latest: Pulling from diamol/fluentd
+c499e6d256d6: Pull complete
+2e516c92236d: Pull complete
+4698a33c221b: Pull complete
+d1778094fa90: Pull complete
+6db5ff94fbba: Pull complete
+b4913cc34384: Pull complete
+be6e79e63a16: Pull complete
+3c170cf750fe: Pull complete
+a232ee103fb2: Pull complete
+3dc98a5a07a0: Pull complete
+Digest: sha256:03a968091e0f4ccb60e7adfbdbfe3ad2c2d1f5f5ce383e18bc3e09e55ab533eb
+Status: Downloaded newer image for diamol/fluentd:latest
+docker: Error response from daemon: create $(pwd)/conf: "$(pwd)/conf" includes invalid characters for a local volume name, only "[a-zA-Z0-9][a-zA-Z0-9_.-]" are allowed. If you intended to pass a host directory, use absolute path.
+See 'docker run --help'.
 
+# now run a timecheck container set to use Docker's Fluentd log driver:
+> docker container run -d --log-driver=fluentd --name timecheck5 diamol/ch19-timecheck:5.0
+34cb793bcb126439760b31cd4d66fbab033b9f35e79d938e37ca5e05da7651b8
+docker: Error response from daemon: failed to create task for container: failed to initialize logging driver: dial tcp 127.0.0.1:24224: connect: connection refused.
+
+# check the timecheck container logs:
+> docker container logs timecheck5
+Error response from daemon: dial tcp 127.0.0.1:24224: connect: connection refused
+
+# and check the Fluentd container logs:
+> docker container logs --tail 1 fluentd
+```
+Will try on my Mac instead.
 
 
 

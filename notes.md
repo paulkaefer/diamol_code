@@ -220,6 +220,11 @@ Like the author says, the truth-app example is contrived... I found [this](https
 - [ ] do folks at work recommend/use/reference https://12factor.net/?
 
 ## Chapter 19: Writing and managing application logs with Docker
+### Section 19.3: Collecting & forwarding container logs
+> Way back in chapter 2 I talked about how Docker adds a consistent management layer over all your apps--it doesn’t matter what’s happening inside the container; you start, stop, and inspect everything in the same way. That’s especially useful with logs when you bring a consolidated logging system into your architecture, and we’ll walk through one of the most popular open source examples of that: Fluentd.
+> 
+> Fluentd is a unified logging layer.
+* run Fluentd in a container --> it will listen for logs from other containers that use the logging driver
 
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
