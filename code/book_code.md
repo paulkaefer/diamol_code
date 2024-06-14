@@ -3821,15 +3821,18 @@ Init
 Unable to find image 'diamol/fluentd:latest' locally
 latest: Pulling from diamol/fluentd
 c499e6d256d6: Pull complete 
-2e516c92236d: Extracting  1.442MB/12.54MB
-4698a33c221b: Download complete 
-d1778094fa90: Download complete 
-6db5ff94fbba: Download complete 
-b4913cc34384: Download complete 
-be6e79e63a16: Download complete 
-3c170cf750fe: Download complete 
-a232ee103fb2: Download complete 
-3dc98a5a07a0: Download complete 
+2e516c92236d: Pull complete 
+4698a33c221b: Pull complete 
+d1778094fa90: Pull complete 
+6db5ff94fbba: Pull complete 
+b4913cc34384: Pull complete 
+be6e79e63a16: Pull complete 
+3c170cf750fe: Pull complete 
+a232ee103fb2: Pull complete 
+3dc98a5a07a0: Pull complete 
+Digest: sha256:03a968091e0f4ccb60e7adfbdbfe3ad2c2d1f5f5ce383e18bc3e09e55ab533eb
+Status: Downloaded newer image for diamol/fluentd:latest
+ef5a1e0b6c7302c2f4cbb95db2f4cdc62b7f5951270d223f6877d25c4f825690
 
 # now run a timecheck container set to use Docker's Fluentd log driver:
 > docker container run -d --log-driver=fluentd --name timecheck5 diamol/ch19-timecheck:5.0
