@@ -232,6 +232,18 @@ Like the author says, the truth-app example is contrived... I found [this](https
 ### Section 19.5: Understanding the container logging model
 > We used the EFK stack in this chapter--Elasticsearch, Fluentd, and Kibana...
 
+## Chapter 20: Controlling HTTP traffic to containers with a reverse proxy
+* The intro is about how we've used a bunch of different ports to keep things separate, but for prod uses:
+> You’ll want lots of applications running on a single cluster, but you need them all to be accessible on the standard HTTP and HTTPS ports, 80 and 443.
+* We'll use Nginx and Traefik
+
+> Reverse proxies are not a new technology, but they’ve shifted left with the container revolution.
+
+* Section 20.3 covers use of nginx's cash
+
+### Todos:
+- [ ] explore https://www.ssllabs.com/
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

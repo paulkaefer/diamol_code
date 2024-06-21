@@ -3934,3 +3934,93 @@ http://localhost:8010/ still shows the APOD app from the last chapter, so I modi
 ## Section 19.4: Managing your log output and collection
 
 
+# Chapter 20: Controlling HTTP traffic to containers with a reverse proxy
+
+## Section 20.1: What is a reverse proxy?
+```bash
+# create a network for this chapter's apps - for Linux containers:
+> docker network create ch20
+b36d5c5eb684e822ec6f0418b3700135ace79e50614e03bb528a5774eba272d4
+
+# OR for Windows containers:
+docker network create --driver=nat ch20
+cd ch20/exercises
+
+# run Nginx with a bind mount to a local configuration folder - on
+# Linux:
+> docker-compose -f nginx/docker-compose.yml -f nginx/override-linux.yml up -d
+[+] Running 6/6
+ ✔ nginx 5 layers [⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                                   7.9s
+   ✔ 8ec398bc0356 Pull complete                                                                                    4.7s
+   ✔ 465560073b6f Pull complete                                                                                    4.6s
+   ✔ f473f9fd0a8c Pull complete                                                                                    0.3s
+   ✔ 52d1d1510ad4 Pull complete                                                                                    1.3s
+   ✔ d579c77f938a Pull complete                                                                                    2.2s
+[+] Running 1/1
+ ✔ Container nginx-nginx-1  Started                                                                                1.0s
+
+# OR on Windows containers:
+docker-compose -f nginx/docker-compose.yml -f nginx/override-windows.yml up -d
+
+# browse to http://localhost
+Welcome to nginx!
+If you see this page, the nginx web server is successfully installed and working. Further configuration is required.
+
+For online documentation and support please refer to nginx.org.
+Commercial support is available at nginx.com.
+
+Thank you for using nginx.
+```
+
+Next exercise:
+```bash
+# add the who-am-I domain to local hosts file on Mac or Linux:
+> echo $'\n127.0.0.1 whoami.local' | sudo tee -a /etc/hosts
+127.0.0.1 whoami.local
+
+# OR on Windows:
+> Add-Content -Value "127.0.0.1 whoami.local" -Path /windows/system32/drivers/etc/hosts
+
+# start the who-am-I container:
+> docker-compose -f whoami/docker-compose.yml up -d
+[+] Running 8/8
+ ✔ whoami 7 layers [⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                                4.0s
+   ✔ 68ced04f60ab Already exists                                                                                   0.0s
+   ✔ e936bd534ffb Already exists                                                                                   0.0s
+   ✔ caf64655bcbb Already exists                                                                                   0.0s
+   ✔ d1927dbcbcab Already exists                                                                                   0.0s
+   ✔ 641667054481 Pull complete                                                                                    2.7s
+   ✔ 203605bb138d Pull complete                                                                                    0.6s
+   ✔ 1bda9e23f8c6 Pull complete                                                                                    0.5s
+[+] Running 1/1
+ ✔ Container whoami-whoami-1  Started                                                                              0.5s
+
+# copy the app config to the Nginx configuration folder:
+> cp ./nginx/sites-available/whoami.local ./nginx/sites-enabled/
+
+# and restart Nginx to load the config:
+> docker-compose -f nginx/docker-compose.yml restart nginx
+time="2024-06-21T13:50:45-05:00" level=warning msg="networks.ch20: external.name is deprecated. Please set name and external: true"
+[+] Restarting 1/1
+ ✔ Container nginx-nginx-1  Started                                                                                0.7s
+
+# browse to http://whoami.local
+"I'm 0022b95d44e4 running on CPU: X64; OS: Linux 5.15.133.1-microsoft-standard-WSL2 #1 SMP Thu Oct 5 21:02:42 UTC 2023"
+```
+Executed in a mix of `cmd.exe`, `wsl`, PowerShell (ran as administrator), and my web browser(s) of choice.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
