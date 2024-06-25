@@ -239,7 +239,7 @@ Like the author says, the truth-app example is contrived... I found [this](https
 
 > Reverse proxies are not a new technology, but they’ve shifted left with the container revolution.
 
-* Section 20.3 covers use of nginx's cash
+* Section 20.3 covers use of nginx's caches
 
 ### Todos:
 - [ ] explore https://www.ssllabs.com/
