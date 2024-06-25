@@ -245,6 +245,8 @@ Like the author says, the truth-app example is contrived... I found [this](https
 
 > Old apps tend not to be built from stateless components, and you may find when you migrate those apps to run in containers that you want the user to be routed to the same container each time. That’s called a sticky session, and you can enable that in Traefik with a setting for the service.
 
+* Section 20.5 provides a nice summary.
+
 ### Todos:
 - [ ] explore https://www.ssllabs.com/
 
