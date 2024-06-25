@@ -4009,6 +4009,88 @@ time="2024-06-21T13:50:45-05:00" level=warning msg="networks.ch20: external.name
 ```
 Executed in a mix of `cmd.exe`, `wsl`, PowerShell (ran as administrator), and my web browser(s) of choice.
 
+```PowerShell
+# add the API domain to local hosts file on Mac or Linux:
+> echo $'\n127.0.0.1 api.numbers.local' | sudo tee -a /etc/hosts
+
+# OR on Windows:
+> Add-Content -Value "127.0.0.1 api.numbers.local" -Path /windows/system32/drivers/etc/hosts
+
+# run the API:
+> docker-compose -f numbers/docker-compose.yml up -d
+[+] Running 9/9
+ ✔ numbers-api 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                          2.1s
+   ✔ 68ced04f60ab Already exists                                                                                   0.0s
+   ✔ e936bd534ffb Already exists                                                                                   0.0s
+   ✔ caf64655bcbb Already exists                                                                                   0.0s
+   ✔ d1927dbcbcab Already exists                                                                                   0.0s
+   ✔ 641667054481 Already exists                                                                                   0.0s
+   ✔ e230b867f357 Pull complete                                                                                    0.5s
+   ✔ 0d2c02cb29b0 Pull complete                                                                                    0.9s
+   ✔ e7fa8da103a8 Pull complete                                                                                    0.6s
+[+] Running 1/1
+ ✔ Container numbers-numbers-api-1  Started                                                                        0.5s
+
+# copy the site config file and restart Nginx:
+> cp ./nginx/sites-available/api.numbers.local ./nginx/sites-enabled/
+> docker-compose -f nginx/docker-compose.yml restart nginx
+[+] Restarting 1/1
+ ✔ Container nginx-nginx-1  Started                                                                                0.3s
+
+# browse to http://api.numbers.local/rng & refresh until it breaks
+```
+Not loading... tried `http://127.0.0.1/rng`, too...
+
+Skipping a bunch of exercises accordingly...
+
+```PowerShell
+PS C:\Users\paulk\GitHub\diamol\ch20\exercises> docker container rm -f $(docker container ls -aq)
+Error response from daemon: No such container: failed to get console mode for stdout: The handle is invalid.
+44af6c0ce2c6
+0022b95d44e4
+ef1c46d865d0
+34cb793bcb12
+133c1ae42a93
+f2f925f62b6e
+7eb52f8bfb24
+35121a206016
+107051d9cfe9
+b7f2fd0c3254
+93a92eb2f79a
+f9292bd09d37
+d2af59840612
+611fa55432ee
+1425ac44d03b
+a32e86eb0e7e
+dca14ec30db3
+```
+
+Trying this one:
+```PowerShell
+# deploy the app with Traefik labels in the override file:
+> docker-compose -f whoami/docker-compose.yml -f whoami/override-traefik.yml up -d
+time="2024-06-25T12:40:43-05:00" level=warning msg="networks.ch20: external.name is deprecated. Please set name and external: true"
+[+] Running 1/1
+ ✔ Container whoami-whoami-1  Started                                                                              0.3s
+ 
+# browse to the Traefik configuration for the router:
+
+# http://localhost:8080/dashboard/#/http/routers/whoami@docker
+This site can’t be reached
+
+# and check the routing:
+> curl -i http://whoami.local
+
+cmdlet Invoke-WebRequest at command pipeline position 1
+Supply values for the following parameters:
+Uri:
+curl : Cannot find drive. A drive with the name 'http' does not exist.
+At line:1 char:1
++ curl -i http://whoami.local
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (http:String) [Invoke-WebRequest], DriveNotFoundException
+    + FullyQualifiedErrorId : DriveNotFound,Microsoft.PowerShell.Commands.InvokeWebRequestCommand
+```
 
 
 

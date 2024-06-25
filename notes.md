@@ -241,6 +241,10 @@ Like the author says, the truth-app example is contrived... I found [this](https
 
 * Section 20.3 covers use of nginx's caches
 
+> ...cloud-native reverse proxy Traefik (approximately pronounced “traffic”)
+
+> Old apps tend not to be built from stateless components, and you may find when you migrate those apps to run in containers that you want the user to be routed to the same container each time. That’s called a sticky session, and you can enable that in Traefik with a setting for the service.
+
 ### Todos:
 - [ ] explore https://www.ssllabs.com/
 
