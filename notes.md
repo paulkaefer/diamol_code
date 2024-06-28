@@ -250,6 +250,18 @@ Like the author says, the truth-app example is contrived... I found [this](https
 ### Todos:
 - [ ] explore https://www.ssllabs.com/
 
+## Chapter 21: Asynchronous communication with a message queue
+
+> We’ll use two modern message queues that run very nicely in Docker: Redis and NATS.
+
+### Section 21.1: What is asynchronous messaging?
+* Synchronous is common:
+> That’s true for REST APIs, SOAP web services, and gRPC, which all use HTTP connections.
+
+### Section 21.3: Consuming and handling messages
+Last paragraph:
+> It’s important to realize that I didn’t change anything to get three times as much processing power for my new-item feature--the web site and message handler code is exactly the same. I’m just running more instances of the same message-handler container. If you have another feature that is triggered by the same event, you can run a different message handler that subscribes to the same message subject. That opens up the interesting option of being able to deploy new features to your app without changing existing code.
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification

@@ -4092,6 +4092,436 @@ At line:1 char:1
     + FullyQualifiedErrorId : DriveNotFound,Microsoft.PowerShell.Commands.InvokeWebRequestCommand
 ```
 
+# Chapter 21: Asynchronous communication with a message queue
+
+## Section 21.1: What is asynchronous messaging?
+
+### **TRY IT NOW** Run the Redis server in a container, connected to a network where you can run other containers to send and receive messages:
+```bash
+# create the network - on Linux containers:
+> docker network create ch21
+fbf4da062917dcdf7d0057c6f43a3d3dd954055fefde85e1ab53e959f607bd94
+
+# OR Windows containers:
+> docker network create -d nat ch21
+
+# run the Redis server:
+> docker container run -d --name redis --network ch21 diamol/redis
+Unable to find image 'diamol/redis:latest' locally
+latest: Pulling from diamol/redis
+cbdbe7a5bc2a: Pull complete
+dc0373118a0d: Pull complete
+cfd369fe6256: Pull complete
+152ffd6a3b24: Pull complete
+7c01860f13a3: Pull complete
+aa6ecacd3bee: Pull complete
+Digest: sha256:56e593fd06046b15beaf4b12e3a6fa9b4c6a199f27053b73ce220f9825172b1c
+Status: Downloaded newer image for diamol/redis:latest
+f4cca25b83491d352c6e81a4a16b06591ac9632caec7d6368a19355ceac186fc
+
+# check that the server is listening:
+> docker container logs redis --tail 1
+1:M 28 Jun 13:48:46.467 * Ready to accept connections
+```
+
+### **TRY IT NOW**: use the Redis CLI to send a few messages:
+```bash
+# run the Redis client in the background to publish messages:
+> docker run -d --name publisher --network ch21 diamol/redis-cli -r 50 -i 5 PUBLISH channel21 ping
+Unable to find image 'diamol/redis-cli:latest' locally
+latest: Pulling from diamol/redis-cli
+cbdbe7a5bc2a: Already exists
+dc0373118a0d: Already exists
+cfd369fe6256: Already exists
+152ffd6a3b24: Already exists
+7c01860f13a3: Already exists
+aa6ecacd3bee: Already exists
+Digest: sha256:a283368e12ef711268ea70086e3152bb3198c960811b9371abec8358660bdcf6
+Status: Downloaded newer image for diamol/redis-cli:latest
+8e5c6597f0bf33faa2816c1a72a2a3c9258643004512d905b4e0b6354f02e280
+
+# check the logs to see messages are being sent:
+> docker logs publisher
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+```
+
+### **TRY IT NOW**: run another container subscribing to the channel receiving the messages above:
+```bash
+# run an interactive subscriber and you'll see messages received every
+# five seconds:
+> docker run -it --network ch21 --name subscriber diamol/redis-cli SUBSCRIBE channel21
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "channel21"
+3) (integer) 1
+1) "message"
+2) "channel21"
+3) "ping"
+1) "message"
+2) "channel21"
+3) "ping"
+...
+
+> docker container rm -f subscriber
+subscriber
+```
+I had to close the Command Prompt window, since CTRL + C didn't exit the container!
+
+## Section 21.2: Using a cloud-native message queue
+### **TRY IT NOW** Run NATS in a container. It has a simple admin API you can use to see how many clients are connected to the queue:
+```bash
+# switch to the exercise folder:
+> cd ch21/exercises/todo-list
+
+# start the message queue:
+> docker-compose up -d message-queue
+[+] Running 3/3
+ ✔ message-queue 2 layers [⣿⣿]      0B/0B      Pulled                                                              1.9s
+   ✔ 2d6c7151b0c7 Pull complete                                                                                    0.5s
+   ✔ b920bf257e35 Pull complete                                                                                    0.4s
+[+] Running 1/2
+ - Network todo-list_app-net            Created                                                                    0.5s
+ ✔ Container todo-list-message-queue-1  Started                                                                    0.4s
+
+# check the logs:
+> docker container logs todo-list-message-queue-1
+[1] 2024/06/28 13:54:44.653381 [INF] Starting nats-server version 2.1.9
+[1] 2024/06/28 13:54:44.653419 [INF] Git commit [7c76626]
+[1] 2024/06/28 13:54:44.653639 [INF] Starting http monitor on 0.0.0.0:8222
+[1] 2024/06/28 13:54:44.653835 [INF] Listening for client connections on 0.0.0.0:4222
+[1] 2024/06/28 13:54:44.653852 [INF] Server id is NDKTM3S6HJCKP4MLNEOJIJCSDXLHT7D2HMSBXX2UR3ZXZWO2XNAY4P6U
+[1] 2024/06/28 13:54:44.653853 [INF] Server is ready
+[1] 2024/06/28 13:54:44.653993 [INF] Listening for route connections on 0.0.0.0:6222
+
+# and check active connections:
+> curl http://localhost:8222/connz
+{
+  "server_id": "NDKTM3S6HJCKP4MLNEOJIJCSDXLHT7D2HMSBXX2UR3ZXZWO2XNAY4P6U",
+  "now": "2024-06-28T13:55:20.076682583Z",
+  "num_connections": 0,
+  "total": 0,
+  "offset": 0,
+  "limit": 1024,
+  "connections": []
+}
+```
+
+### **TRY IT NOW** Run the new version of the to-do web application and the database. You’ll see that the app loads and you can use it without any errors, but it doesn’t quite work correctly:
+```bash
+# start the web and database containers:
+> docker-compose up -d todo-web todo-db
+[+] Running 18/18
+ ✔ todo-web 7 layers [⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                              3.9s
+   ✔ 68ced04f60ab Already exists                                                                                   0.0s
+   ✔ e936bd534ffb Already exists                                                                                   0.0s
+   ✔ caf64655bcbb Already exists                                                                                   0.0s
+   ✔ d1927dbcbcab Already exists                                                                                   0.0s
+   ✔ 641667054481 Already exists                                                                                   0.0s
+   ✔ 9d301c563cc9 Pull complete                                                                                    1.7s
+   ✔ 4bea86c97def Pull complete                                                                                    2.4s
+ ✔ todo-db 9 layers [⣿⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                             4.1s
+   ✔ 89d9c30c1d48 Pull complete                                                                                    0.5s
+   ✔ 66ddea140797 Pull complete                                                                                    0.3s
+   ✔ 977cf4e465c1 Pull complete                                                                                    0.3s
+   ✔ d2b1be7aec3a Pull complete                                                                                    1.3s
+   ✔ 648405a33fb3 Pull complete                                                                                    0.6s
+   ✔ f0455ae649e1 Pull complete                                                                                    0.7s
+   ✔ 7aa0c1a0773f Pull complete                                                                                    1.1s
+   ✔ 0f1582464408 Pull complete                                                                                    1.2s
+   ✔ 131f5d9dc187 Pull complete                                                                                    1.5s
+[+] Running 2/2
+ ✔ Container todo-list-todo-web-1  Started                                                                         0.7s
+ ✔ Container todo-list-todo-db-1   Started                                                                         1.0s
+
+# browse to http://localhost:8080 and add some items
+```
+Hmm, I'm not able to successfully add items... Oh, that's expected!
+
+### **TRY IT NOW** use NATS subscriber tool from GitHub:
+```bash
+# run a subscriber listening for "events.todo.newitem" messages
+> docker container run -d --name todo-sub --network todo-list_app-net diamol/nats-sub events.todo.newitem
+Unable to find image 'diamol/nats-sub:latest' locally
+latest: Pulling from diamol/nats-sub
+31603596830f: Already exists
+792f5419a843: Already exists
+985b3cc35207: Pull complete
+2f4bef568e76: Pull complete
+Digest: sha256:870e0b379f96bd2717b8a4e387cea2b544e08f3165c0988aec4e3e0aef3871dd
+Status: Downloaded newer image for diamol/nats-sub:latest
+62f904de2bc880227f27c3229ff0d6520c331dd7b7db7d3bacebc4a1b18109c7
+
+# check the subscriber logs:
+> docker container logs todo-sub
+Listening on [events.todo.newitem]
+
+# browse to http://localhost:8080 and add some new items
+
+# check that the new item events are published:
+> docker container logs todo-sub
+Listening on [events.todo.newitem]
+[#1] Received on [events.todo.newitem]: '{"Subject":"events.todo.newitem","Item":{"ToDoId":0,"Item":"drink my tea","DateAdded":"2024-06-28T14:00:02.8683639Z"},"CorrelationId":"b35e4403-57d4-4b25-9ed3-1004f145e131"}'
+[#2] Received on [events.todo.newitem]: '{"Subject":"events.todo.newitem","Item":{"ToDoId":0,"Item":"eat some bread","DateAdded":"2024-06-28T14:00:06.3648763Z"},"CorrelationId":"4e0836f8-513b-44ae-8c7b-d1a8bf0234d8"}'
+```
+Also I now see this at `http://localhost:8222/connz`:
+```JSON
+{
+  "server_id": "NDKTM3S6HJCKP4MLNEOJIJCSDXLHT7D2HMSBXX2UR3ZXZWO2XNAY4P6U",
+  "now": "2024-06-28T13:59:26.700597265Z",
+  "num_connections": 1,
+  "total": 1,
+  "offset": 0,
+  "limit": 1024,
+  "connections": [
+    {
+      "cid": 4,
+      "ip": "172.21.0.5",
+      "port": 37526,
+      "start": "2024-06-28T13:59:08.734256915Z",
+      "last_activity": "2024-06-28T13:59:08.734727187Z",
+      "rtt": "193µs",
+      "uptime": "17s",
+      "idle": "17s",
+      "pending_bytes": 0,
+      "in_msgs": 0,
+      "out_msgs": 0,
+      "in_bytes": 0,
+      "out_bytes": 0,
+      "subscriptions": 1,
+      "name": "NATS Sample Subscriber",
+      "lang": "go",
+      "version": "1.9.1"
+    }
+  ]
+}
+```
+
+## Section 21.3: Consuming and handling messages
+### **TRY IT NOW** The message handler for the to-do app is already built and published to Docker Hub, so it’s ready to go. Run it now and see how the app works with async messaging:
+```bash
+# start the message handler:
+> docker-compose up -d save-handler
+[+] Running 7/7
+ ✔ save-handler 6 layers [⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                           2.5s
+   ✔ 68ced04f60ab Already exists                                                                                   0.0s
+   ✔ e936bd534ffb Already exists                                                                                   0.0s
+   ✔ caf64655bcbb Already exists                                                                                   0.0s
+   ✔ d1927dbcbcab Already exists                                                                                   0.0s
+   ✔ ec53e99ffcc1 Pull complete                                                                                    0.7s
+   ✔ 643922edbd2d Pull complete                                                                                    1.1s
+[+] Running 1/1
+ ✔ Container todo-list-save-handler-1  Started                                                                     0.4s
+
+# check the connection from the container logs:
+> docker logs todo-list-save-handler-1
+Connecting to message queue url: nats://message-queue:4222
+Listening on subject: events.todo.newitem, queue: save-handler
+
+# browse to http://localhost:8080 and add some new items
+# It worked! I did have to refresh the page after adding them, though:
+# Item	Date Added
+# edit Wikipedia	Friday, 28 June 2024
+# read books	Friday, 28 June 2024
+
+# check that the events have been handled:
+> docker logs todo-list-save-handler-1
+Connecting to message queue url: nats://message-queue:4222
+Listening on subject: events.todo.newitem, queue: save-handler
+Received message, subject: events.todo.newitem
+Saving item, added: 06/28/2024 14:07:52; event ID: 14fb6a92-634f-49b7-9b3f-679a0a66dd54
+Item saved; ID: 1; event ID: 14fb6a92-634f-49b7-9b3f-679a0a66dd54
+Received message, subject: events.todo.newitem
+Saving item, added: 06/28/2024 14:07:58; event ID: de7a6746-419b-4a02-a37c-045218ca01ca
+Item saved; ID: 2; event ID: de7a6746-419b-4a02-a37c-045218ca01ca
+```
+
+### **TRY IT NOW** Message handlers are internal components; they don’t listen on any ports, so you can run them at scale with multiple containers on a single machine. NATS supports load balancing to share messages if there are several instances of the same handler running:
+```bash
+# scale up the handlers:
+> docker-compose up -d --scale save-handler=3
+[+] Running 6/6
+ ✔ Container todo-list-todo-web-1       Running                                                                    0.0s
+ ✔ Container todo-list-save-handler-1   Running                                                                    0.0s
+ ✔ Container todo-list-message-queue-1  Running                                                                    0.0s
+ ✔ Container todo-list-save-handler-2   Started                                                                    1.0s
+ ✔ Container todo-list-save-handler-3   Started                                                                    0.6s
+ ✔ Container todo-list-todo-db-1        Running                                                                    0.0s
+
+# check that one of the new handlers has connected:
+> docker logs todo-list-save-handler-2
+Connecting to message queue url: nats://message-queue:4222
+Listening on subject: events.todo.newitem, queue: save-handler
+
+# browse to http://localhost:8080 and add some new items
+
+# see which handlers have processed the messages:
+> docker-compose logs --tail=1 save-handler
+save-handler-2  | Listening on subject: events.todo.newitem, queue: save-handler
+save-handler-1  | Item saved; ID: 3; event ID: 8f023886-88df-4ad3-ba45-36e59df4638c
+save-handler-3  | Item saved; ID: 5; event ID: 1297de01-f2fe-4c38-9ecd-686a14d4dd17
+save-handler-2  | Item saved; ID: 6; event ID: 55dae4b0-38e1-4626-be15-9d066d04d7e6
+```
+If I run with `--tail=5`, I see `ID: 4`, too. `ID: 3` I added before this exercise.
+
+## Section 21.4: Adding new features with message handlers
+
+### **TRY IT NOW** The new message handler is in a Compose override file. When you deploy it, you’ll see that this is an additive deployment. Compose creates one new container, but none of the other containers change:
+```bash
+# run the audit message handler, keeping same scale for the save
+ 
+# handler:
+> docker-compose -f docker-compose.yml -f docker-compose-audit.yml up -d --scale save-handler=3
+[+] Running 7/7
+ ✔ audit-handler 6 layers [⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                          2.2s
+   ✔ 68ced04f60ab Already exists                                                                                   0.0s
+   ✔ e936bd534ffb Already exists                                                                                   0.0s
+   ✔ caf64655bcbb Already exists                                                                                   0.0s
+   ✔ d1927dbcbcab Already exists                                                                                   0.0s
+   ✔ ec53e99ffcc1 Already exists                                                                                   0.0s
+   ✔ ff47cde80ca1 Pull complete                                                                                    0.6s
+[+] Running 7/7
+ ✔ Container todo-list-audit-handler-1  Started                                                                    0.4s
+ ✔ Container todo-list-message-queue-1  Running                                                                    0.0s
+ ✔ Container todo-list-todo-db-1        Running                                                                    0.0s
+ ✔ Container todo-list-todo-web-1       Running                                                                    0.0s
+ ✔ Container todo-list-save-handler-1   Running                                                                    0.0s
+ ✔ Container todo-list-save-handler-3   Running                                                                    0.0s
+ ✔ Container todo-list-save-handler-2   Running                                                                    0.0s
+
+# check that the audit handler is listening:
+> docker logs todo-list-audit-handler-1
+Connecting to message queue url: nats://message-queue:4222
+Listening on subject: events.todo.newitem, queue: audit-handler
+
+# browse to http://localhost:8080 and add some new items
+
+# check the audit trail:
+> docker logs todo-list-audit-handler-1
+Connecting to message queue url: nats://message-queue:4222
+Listening on subject: events.todo.newitem, queue: audit-handler
+AUDIT @ 06/28/2024 14:13:18: build Orinthopter
+AUDIT @ 06/28/2024 14:13:24: work on my "book nook"
+AUDIT @ 06/28/2024 14:13:48: Robert'); DROP TABLE Students;--
+```
+Ooh, we'll probably get to this but `http://localhost:8222/connz` now shows:
+```JSON
+{
+  "server_id": "NDKTM3S6HJCKP4MLNEOJIJCSDXLHT7D2HMSBXX2UR3ZXZWO2XNAY4P6U",
+  "now": "2024-06-28T14:14:29.833327391Z",
+  "num_connections": 5,
+  "total": 5,
+  "offset": 0,
+  "limit": 1024,
+  "connections": [
+    {
+      "cid": 4,
+      "ip": "172.21.0.5",
+      "port": 37526,
+      "start": "2024-06-28T13:59:08.734256915Z",
+      "last_activity": "2024-06-28T14:13:48.914237277Z",
+      "rtt": "193µs",
+      "uptime": "15m21s",
+      "idle": "40s",
+      "pending_bytes": 0,
+      "in_msgs": 0,
+      "out_msgs": 11,
+      "in_bytes": 0,
+      "out_bytes": 3916,
+      "subscriptions": 1,
+      "name": "NATS Sample Subscriber",
+      "lang": "go",
+      "version": "1.9.1"
+    },
+    {
+      "cid": 7,
+      "ip": "172.21.0.6",
+      "port": 37256,
+      "start": "2024-06-28T14:07:26.496757457Z",
+      "last_activity": "2024-06-28T14:13:24.297726046Z",
+      "rtt": "1m57.888288486s",
+      "uptime": "7m3s",
+      "idle": "1m5s",
+      "pending_bytes": 0,
+      "in_msgs": 0,
+      "out_msgs": 5,
+      "in_bytes": 0,
+      "out_bytes": 1766,
+      "subscriptions": 1,
+      "lang": ".NET",
+      "version": "0.0.1"
+    },
+    {
+      "cid": 11,
+      "ip": "172.21.0.7",
+      "port": 48438,
+      "start": "2024-06-28T14:08:59.131927168Z",
+      "last_activity": "2024-06-28T14:09:36.367306708Z",
+      "rtt": "1m57.833236578s",
+      "uptime": "5m30s",
+      "idle": "4m53s",
+      "pending_bytes": 0,
+      "in_msgs": 0,
+      "out_msgs": 2,
+      "in_bytes": 0,
+      "out_bytes": 724,
+      "subscriptions": 1,
+      "lang": ".NET",
+      "version": "0.0.1"
+    },
+    {
+      "cid": 12,
+      "ip": "172.21.0.8",
+      "port": 47172,
+      "start": "2024-06-28T14:08:59.592066765Z",
+      "last_activity": "2024-06-28T14:13:48.914237277Z",
+      "rtt": "1m57.628567907s",
+      "uptime": "5m30s",
+      "idle": "40s",
+      "pending_bytes": 0,
+      "in_msgs": 0,
+      "out_msgs": 2,
+      "in_bytes": 0,
+      "out_bytes": 730,
+      "subscriptions": 1,
+      "lang": ".NET",
+      "version": "0.0.1"
+    },
+    {
+      "cid": 16,
+      "ip": "172.21.0.9",
+      "port": 50496,
+      "start": "2024-06-28T14:12:45.189239577Z",
+      "last_activity": "2024-06-28T14:13:48.914237277Z",
+      "rtt": "30.108451ms",
+      "uptime": "1m44s",
+      "idle": "40s",
+      "pending_bytes": 0,
+      "in_msgs": 0,
+      "out_msgs": 3,
+      "in_bytes": 0,
+      "out_bytes": 1112,
+      "subscriptions": 1,
+      "lang": ".NET",
+      "version": "0.0.1"
+    }
+  ]
+}
+```
+
+
+
+
+
+
 
 
 
