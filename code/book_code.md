@@ -4517,11 +4517,40 @@ Ooh, we'll probably get to this but `http://localhost:8222/connz` now shows:
 }
 ```
 
+### **TRY IT NOW** The to-do list API is already written and ready to deploy. It listens on port 8081 and publishes a new-item event when users make HTTP POST requests:
+```bash
+# start the API container, defined in the override file:
+> docker-compose -f docker-compose.yml -f docker-compose-audit.yml -f docker-compose-api.yml up -d todo-api
+[+] Running 8/8
+ ✔ todo-api 7 layers [⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                              2.1s
+   ✔ 68ced04f60ab Already exists                                                                                   0.0s
+   ✔ e936bd534ffb Already exists                                                                                   0.0s
+   ✔ caf64655bcbb Already exists                                                                                   0.0s
+   ✔ d1927dbcbcab Already exists                                                                                   0.0s
+   ✔ 641667054481 Already exists                                                                                   0.0s
+   ✔ 9d301c563cc9 Already exists                                                                                   0.0s
+   ✔ 1cda22134228 Pull complete                                                                                    0.6s
+[+] Running 1/1
+ ✔ Container todo-list-todo-api-1  Started                                                                         0.3s
 
+# add a new item through the API:
+# (I had to use WSL for this!)
+> curl http://localhost:8081/todo -d '{"item":"Record promo video"}' -H 'Content-Type: application/json'
 
+# check the audit log:
+> docker logs todo-list-audit-handler-1
+Connecting to message queue url: nats://message-queue:4222
+Listening on subject: events.todo.newitem, queue: audit-handler
+AUDIT @ 06/28/2024 14:13:18: build Orinthopter
+AUDIT @ 06/28/2024 14:13:24: work on my "book nook"
+AUDIT @ 06/28/2024 14:13:48: Robert'); DROP TABLE Students;--
+AUDIT @ 06/28/2024 14:16:38: Record promo video
+```
 
+## Section 21.5: Understanding async messaging patterns
 
-
+## Section 21.6: Lab
+I looked at the README. Maybe I should review later, too.
 
 
 

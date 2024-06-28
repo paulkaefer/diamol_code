@@ -262,6 +262,11 @@ Like the author says, the truth-app example is contrived... I found [this](https
 Last paragraph:
 > It’s important to realize that I didn’t change anything to get three times as much processing power for my new-item feature--the web site and message handler code is exactly the same. I’m just running more instances of the same message-handler container. If you have another feature that is triggered by the same event, you can run a different message handler that subscribes to the same message subject. That opens up the interesting option of being able to deploy new features to your app without changing existing code.
 
+### Section 21.5: Understanding async messaging patterns
+> The pattern we’ve used in this chapter is called publish-subscribe (or “pub-sub”), and it allows zero or more subscribers to receive published messages, as in figure 21.13.
+
+> RabbitMQ is a more advanced queue that supports complex routing and persistent messaging, so messages are saved to disk and the queue contents survive a container restart.
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
