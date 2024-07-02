@@ -267,6 +267,16 @@ Last paragraph:
 
 > RabbitMQ is a more advanced queue that supports complex routing and persistent messaging, so messages are saved to disk and the queue contents survive a container restart.
 
+## Chapter 22: Never the end
+* easy/quick to get a proof-of-concept running... and it will be more effective if you demonstrate multiple tools (e.g., Grafana)/components (for example, a whole pipeline across multiple containers)
+* building a use case for Docker @ your org, with justifications for various stakeholders
+* revisits Docker Swarm vs. Kubernetes
+* useful links:
+  * The Docker Community Slack group-- https://dockr.ly/slack.
+  * Find an in-person or virtual meetup-- https://events.docker.com.
+  * Follow the Docker Captains; these are community members recognized by Docker for their expertise and sharing-- www.docker.com/community/captains.
+  * DockerCon, the container conference-- https://dockercon.com.
+
 # Once complete:
 - [ ] does LinkedIn have a Docker quiz?
 - [ ] consider pursuing a certification
